@@ -12,19 +12,23 @@ class ClassFile extends AbstractFile
     public function getClass(): ClassModel
     {
         /**
-         * @var Node\Stmt\Class_|null $class
+         * @var Node\Stmt\Class_|null $node
          */
-        $node = $this->manipulator->findFirstNode(function (Node $node) {
+        $node = $this->finder->findFirst($this->statements, function (Node $node) {
             return $node instanceof Node\Stmt\Class_;
         });
 
-        return new ClassModel($this, $node);
+        if (null === $node) {
+            throw new \Exception('Class not found.');
+        }
+
+        return new ClassModel($node);
     }
-    // get class
-    // get namespace
-    // set namespace
-    // get use statements
-    // add use statement
-    // remove use statement
-    // has use statement
+
+    public function setClass(ClassModel $model): void
+    {
+        $oldModel = $this->getClass();
+
+        $this->manipulator->replaceNode($this->statements, $oldModel->getNode(), $model->getNode());
+    }
 }

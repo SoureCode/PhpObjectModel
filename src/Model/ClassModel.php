@@ -5,48 +5,200 @@ declare(strict_types=1);
 namespace SoureCode\PhpObjectModel\Model;
 
 use PhpParser\Node;
-use SoureCode\PhpObjectModel\File\AbstractFile;
-use SoureCode\PhpObjectModel\Manipulator\ClassManipulator;
 
 /**
- * @extends AbstractModel<Node\Stmt\Class_>
+ * @extends AbstractClassLikeModel<Node\Stmt\Class_>
  */
-class ClassModel extends AbstractModel
+class ClassModel extends AbstractClassLikeModel
 {
-    private ClassManipulator $manipulator;
-
-    public function __construct(AbstractFile $file, Node\Stmt\Class_ $node)
+    public function __construct(Node\Stmt\Class_|string $nodeOrName)
     {
-        parent::__construct($file, $node);
+        if (is_string($nodeOrName)) {
+            $node = new Node\Stmt\Class_($nodeOrName);
+        } else {
+            $node = $nodeOrName;
+        }
 
-        $this->manipulator = new ClassManipulator($node);
+        parent::__construct($node);
     }
 
-    public function getName(): string
-    {
-        return $this->node->name->name;
-    }
-
-    public function setName(string $name): void
-    {
-        $this->node->name->name = $name;
-    }
-
-    // get properties
+    /**
+     * @return Node\Stmt\Property[]
+     */
     public function getProperties(): array
     {
-        return $this->manipulator->findNodes(function (Node $node) {
-            return $node instanceof Node\Stmt\Property;
+        return $this->finder->findInstanceOf($this->node, Node\Stmt\Property::class);
+    }
+
+    public function hasProperty(string $name): bool
+    {
+        $node = $this->finder->findFirst($this->node, function (Node $node) use ($name) {
+            return $node instanceof Node\Stmt\Property && $node->props[0]->name->name === $name;
+        });
+
+        return null !== $node;
+    }
+
+    public function getProperty(string $name): Node\Stmt\Property
+    {
+        /**
+         * @var Node\Stmt\Property|null $node
+         */
+        $node = $this->finder->findFirst($this->node, function (Node $node) use ($name) {
+            return $node instanceof Node\Stmt\Property && $node->props[0]->name->name === $name;
+        });
+
+        if (null === $node) {
+            throw new \InvalidArgumentException(sprintf('Property "%s" not found.', $name));
+        }
+
+        return $node;
+    }
+
+    public function addProperty(Node\Stmt\Property $property): void
+    {
+        $targetNode = $this->finder->findLastInstanceOf($this->node, Node\Stmt\Property::class);
+
+        if (!$targetNode) {
+            $this->finder->findLastInstanceOf($this->node, Node\Stmt\ClassConst::class);
+        }
+
+        if (!$targetNode) {
+            $this->finder->findLastInstanceOf($this->node, Node\Stmt\TraitUse::class);
+        }
+
+        if ($targetNode) {
+            $index = array_search($targetNode, $this->node->stmts);
+
+            array_splice(
+                $this->node->stmts,
+                $index + 1,
+                0,
+                [$property]
+            );
+
+            return;
+        }
+
+        array_unshift($this->node->stmts, $property);
+    }
+
+    public function removeProperty(string $name): void
+    {
+        $property = $this->getProperty($name);
+
+        $this->manipulator->removeNode($this->node, $property);
+    }
+
+    /**
+     * @return ClassMethodModel[]
+     */
+    public function getMethods(): array
+    {
+        $nodes = $this->finder->findInstanceOf($this->node, Node\Stmt\ClassMethod::class);
+
+        return array_map(static function (Node\Stmt\ClassMethod $node) {
+            return new ClassMethodModel($node);
+        }, $nodes);
+    }
+
+    public function hasMethod(string $name): bool
+    {
+        $node = $this->finder->findFirst($this->node, function (Node $node) use ($name) {
+            return $node instanceof Node\Stmt\ClassMethod && $node->name->name === $name;
+        });
+
+        return null !== $node;
+    }
+
+    public function getMethod(string $name): ClassMethodModel
+    {
+        /**
+         * @var Node\Stmt\ClassMethod|null $node
+         */
+        $node = $this->finder->findFirst($this->node, function (Node $node) use ($name) {
+            return $node instanceof Node\Stmt\ClassMethod && $node->name->name === $name;
+        });
+
+        if (null === $node) {
+            throw new \InvalidArgumentException(sprintf('Method "%s" not found.', $name));
+        }
+
+        return new ClassMethodModel($node);
+    }
+
+    public function addMethod(ClassMethodModel $model): void
+    {
+        $targetNode = $this->finder->findLastInstanceOf($this->node, Node\Stmt\ClassMethod::class);
+
+        if ($targetNode) {
+            $index = array_search($targetNode, $this->node->stmts);
+
+            array_splice(
+                $this->node->stmts,
+                $index + 1,
+                0,
+                [$model->getNode()]
+            );
+
+            return;
+        }
+
+        $this->node->stmts[] = $model->getNode();
+    }
+
+    public function removeMethod(string $name): void
+    {
+        $method = $this->getMethod($name);
+        $this->manipulator->removeNode($this->node, $method->getNode());
+    }
+
+    // @todo get constants
+
+    // @todo has constant
+    // @todo get constant
+    // @todo add constant
+    // @todo remove constant
+
+    // @todo getTraits
+
+    // @todo usesTrait (has)
+    // @todo useTrait (add)
+    // @todo removeTrait (remove)
+
+    /**
+     * @psalm-return class-string[]
+     */
+    public function getInterfaces(): array
+    {
+        return $this->node->implements;
+    }
+
+    /**
+     * @psalm-param  class-string $name
+     */
+    public function implementInterface(string $name): void
+    {
+        $this->node->implements[] = new Node\Name($name);
+    }
+
+    /**
+     * @psalm-param  class-string $name
+     */
+    public function removeInterface(string $name): void
+    {
+        $this->node->implements = array_filter($this->node->implements, static function (Node\Name $node) use ($name) {
+            return $node->toString() !== $name;
         });
     }
 
-    // has property
-    public function hasProperty(string $name): bool
+    /**
+     * @psalm-param  class-string $name
+     */
+    public function implementsInterface(string $name): bool
     {
-        $properties = $this->getProperties();
-
-        foreach ($properties as $property) {
-            if ($property->props[0]->name->name === $name) {
+        foreach ($this->node->implements as $node) {
+            if ($node->toString() === $name) {
                 return true;
             }
         }
@@ -54,50 +206,74 @@ class ClassModel extends AbstractModel
         return false;
     }
 
-    // get property
-    public function getProperty(string $name): Node\Stmt\Property
+    /**
+     * @psalm-return class-string|null
+     */
+    public function getParent(): ?string
     {
-        $properties = $this->getProperties();
+        /**
+         * @var Node\Name|null $node
+         */
+        $parent = $this->node->extends;
 
-        foreach ($properties as $property) {
-            if ($property->props[0]->name->name === $name) {
-                return $property;
-            }
+        if (!$parent) {
+            return null;
         }
 
-        throw new \Exception(sprintf('Property "%s" not found.', $name));
+        if ($parent->hasAttribute('resolvedName')) {
+            return $parent->getAttribute('resolvedName')->toString();
+        }
+
+        return $parent->toString();
     }
 
-    // add property
+    /**
+     * @psalm-param class-string $name
+     */
+    public function extend(string $name): void
+    {
+        $this->node->extends = new Node\Name($name);
+    }
 
+    public function isAbstract(): bool
+    {
+        return $this->node->isAbstract();
+    }
 
-    // remove property
+    public function setAbstract(bool $abstract): void
+    {
+        if ($abstract) {
+            $this->node->flags |= Node\Stmt\Class_::MODIFIER_ABSTRACT;
+        } else {
+            $this->node->flags &= ~Node\Stmt\Class_::MODIFIER_ABSTRACT;
+        }
+    }
 
-    // get methods
+    public function isFinal(): bool
+    {
+        return $this->node->isFinal();
+    }
 
-    // has method
-    // get method
-    // add method
-    // remove method
+    public function setFinal(bool $final): void
+    {
+        if ($final) {
+            $this->node->flags |= Node\Stmt\Class_::MODIFIER_FINAL;
+        } else {
+            $this->node->flags &= ~Node\Stmt\Class_::MODIFIER_FINAL;
+        }
+    }
 
-    // get constants
+    public function isReadOnly(): bool
+    {
+        return $this->node->isReadOnly();
+    }
 
-    // has constant
-    // get constant
-    // add constant
-    // remove constant
-
-    // getTraits
-
-    // usesTrait (has)
-    // useTrait (add)
-    // removeTrait (remove)
-
-    // getInterfaces
-    // implementInterface (add)
-    // removeInterface (remove)
-    // implementsInterface (has)
-
-    // getParent (get)
-    // extend (set)
+    public function setReadOnly(bool $readOnly): void
+    {
+        if ($readOnly) {
+            $this->node->flags |= Node\Stmt\Class_::MODIFIER_READONLY;
+        } else {
+            $this->node->flags &= ~Node\Stmt\Class_::MODIFIER_READONLY;
+        }
+    }
 }

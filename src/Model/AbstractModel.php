@@ -5,26 +5,38 @@ declare(strict_types=1);
 namespace SoureCode\PhpObjectModel\Model;
 
 use PhpParser\Node;
-use SoureCode\PhpObjectModel\File\AbstractFile;
+use SoureCode\PhpObjectModel\Node\NodeFinder;
+use SoureCode\PhpObjectModel\Node\NodeManipulator;
 
 /**
- * @template T of Node
+ * @psalm-template T of Node
  */
 abstract class AbstractModel
 {
-    protected readonly AbstractFile $file;
+    /**
+     * @psalm-var T
+     */
+    protected Node $node;
+
+    protected NodeFinder $finder;
+
+    protected NodeManipulator $manipulator;
 
     /**
-     * @var T
+     * @psalm-param T $node
      */
-    protected readonly Node $node;
-
-    /**
-     * @param T $node
-     */
-    public function __construct(AbstractFile $file, Node $node)
+    public function __construct(Node $node)
     {
         $this->node = $node;
-        $this->file = $file;
+        $this->finder = new NodeFinder();
+        $this->manipulator = new NodeManipulator();
+    }
+
+    /**
+     * @psalm-return T
+     */
+    public function getNode(): Node
+    {
+        return $this->node;
     }
 }

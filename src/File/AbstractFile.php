@@ -11,7 +11,9 @@ use PhpParser\NodeVisitor;
 use PhpParser\Parser;
 use PhpParser\PrettyPrinter\Standard;
 use PhpParser\PrettyPrinterAbstract;
-use SoureCode\PhpObjectModel\Manipulator\FileManipulator;
+use SoureCode\PhpObjectModel\Node\NodeFinder;
+use SoureCode\PhpObjectModel\Node\NodeManipulator;
+use Symfony\Component\Filesystem\Filesystem;
 
 abstract class AbstractFile
 {
@@ -22,7 +24,7 @@ abstract class AbstractFile
     /**
      * @var Node[]
      */
-    protected array $newStatements = [];
+    protected array $statements = [];
 
     /**
      * @var Node[]
@@ -35,45 +37,74 @@ abstract class AbstractFile
 
     protected PrettyPrinterAbstract $printer;
 
-    protected string $sourceCode;
+    protected string $oldSourceCode;
 
-    protected FileManipulator $manipulator;
+    protected NodeManipulator $manipulator;
 
     public function __construct(string $path)
     {
         $this->path = $path;
 
-        $this->lexer = new Lexer\Emulative();
+        $this->lexer = new Lexer\Emulative([
+            'usedAttributes' => [
+                'comments',
+                'startLine',
+                'endLine',
+                'startTokenPos',
+                'endTokenPos',
+            ],
+        ]);
         $this->parser = new Parser\Php7($this->lexer);
         $this->printer = new Standard();
 
         $this->setSourceCode($this->load());
-        $this->manipulator = new FileManipulator($this);
+        $this->manipulator = new NodeManipulator();
+        $this->finder = new NodeFinder();
     }
 
     protected function load(): string
     {
+        $fs = new Filesystem();
+
+        if (!$fs->exists($this->path)) {
+            throw new \RuntimeException(sprintf('File "%s" does not exist.', $this->path));
+        }
+
         return file_get_contents($this->path);
     }
 
-    public function save(): void
+    public function getOldSourceCode(): string
     {
-        file_put_contents($this->path, $this->sourceCode);
-    }
-
-    public function getSourceCode(): string
-    {
-        return $this->sourceCode;
+        return $this->oldSourceCode;
     }
 
     public function getStatements(): array
     {
-        return $this->newStatements;
+        return $this->statements;
+    }
+
+    public function save(): void
+    {
+        (new Filesystem())->dumpFile($this->path, $this->getSourceCode());
+    }
+
+    public function update(): void
+    {
+        $this->setSourceCode($this->getSourceCode());
+    }
+
+    public function getSourceCode(): string
+    {
+        return $this->printer->printFormatPreserving(
+            $this->statements,
+            $this->oldStatements,
+            $this->oldTokens
+        );
     }
 
     protected function setSourceCode(string $sourceCode): void
     {
-        $this->sourceCode = $sourceCode;
+        $this->oldSourceCode = $sourceCode;
         $this->oldStatements = $this->parser->parse($sourceCode) ?? [];
         $this->oldTokens = $this->lexer->getTokens();
 
@@ -85,6 +116,13 @@ abstract class AbstractFile
             ])
         );
 
-        $this->newStatements = $traverser->traverse($this->oldStatements);
+        $this->statements = $traverser->traverse($this->oldStatements);
     }
+
+    // get namespace
+    // set namespace
+    // get use statements
+    // add use statement
+    // remove use statement
+    // has use statement
 }
