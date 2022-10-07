@@ -116,4 +116,5 @@ abstract class AbstractFunctionLikeModel extends AbstractModel
     {
         $this->manipulator->removeNode($this->node, $node);
     }
+
 }

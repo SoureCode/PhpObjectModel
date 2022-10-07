@@ -155,6 +155,24 @@ class ClassModelTest extends TestCase
         self::assertTrue($actual->isPrivate());
         self::assertFalse($actual->isAbstract());
         self::assertFalse($actual->isReadonly());
+    }
 
+    public function testGetProperties(): void
+    {
+        $actual = $this->class->getProperties();
+
+        self::assertCount(12, $actual);
+    }
+
+    public function testGetMethod(): void
+    {
+        $actual = $this->class->getMethod('baz');
+
+        self::assertSame('baz', $actual->getName());
+        self::assertFalse($actual->isStatic());
+        self::assertFalse($actual->isPublic());
+        self::assertFalse($actual->isProtected());
+        self::assertTrue($actual->isPrivate());
+        self::assertFalse($actual->isAbstract());
     }
 }

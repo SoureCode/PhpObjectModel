@@ -31,4 +31,9 @@ class ExampleClassA extends AbstractBaseClassA implements ExampleAInterface
     {
         throw new \Exception('Not implemented yet.');
     }
+
+    public function baz(string $foo, int $bar): string
+    {
+        return sprintf("%s - %d", $foo, $bar);
+    }
 }

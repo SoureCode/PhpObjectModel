@@ -29,6 +29,31 @@ class ClassMethodModel extends AbstractFunctionLikeModel
         parent::__construct($node);
     }
 
+    public function getName(): string
+    {
+        return $this->node->name->name;
+    }
+
+    public function isPrivate(): bool
+    {
+        return $this->node->isPrivate();
+    }
+
+    public function isProtected(): bool
+    {
+        return $this->node->isProtected();
+    }
+
+    public function isPublic(): bool
+    {
+        return $this->node->isPublic();
+    }
+
+    public function setName(string $name): void
+    {
+        $this->node->name = new Node\Identifier($name);
+    }
+
     public function isStatic(): bool
     {
         return $this->node->isStatic();
