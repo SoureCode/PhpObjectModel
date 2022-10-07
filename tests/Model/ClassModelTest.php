@@ -7,6 +7,8 @@ namespace SoureCode\PhpObjectModel\Tests\Model;
 use PHPUnit\Framework\TestCase;
 use SoureCode\PhpObjectModel\File\ClassFile;
 use SoureCode\PhpObjectModel\Model\ClassModel;
+use SoureCode\PhpObjectModel\Tests\Fixtures\AbstractBaseClassA;
+use SoureCode\PhpObjectModel\Tests\Fixtures\AbstractBaseClassB;
 
 class ClassModelTest extends TestCase
 {
@@ -97,20 +99,18 @@ class ClassModelTest extends TestCase
 
     public function testParent(): void
     {
-        self::assertSame("SoureCode\\PhpObjectModel\\Tests\\Fixtures\\AbstractBaseClassA", $this->class->getParent());
+        self::assertSame(AbstractBaseClassA::class, $this->class->getParent());
 
         $code = $this->file->getSourceCode();
 
-        self::assertStringContainsString("\nclass ExampleClassA", $code);
-        self::assertStringNotContainsString('abstract class ExampleClassA', $code);
+        self::assertStringContainsString('extends AbstractBaseClassA', $code);
 
-        $this->class->setAbstract(true);
+        $this->class->extend(AbstractBaseClassB::class);
 
-        self::assertTrue($this->class->isAbstract());
+        self::assertSame(AbstractBaseClassB::class, $this->class->getParent());
 
         $code = $this->file->getSourceCode();
 
-        self::assertStringContainsString('abstract class ExampleClassA', $code);
-        self::assertStringNotContainsString("\nclass ExampleClassA", $code);
+        self::assertStringContainsString('extends '.AbstractBaseClassB::class, $code);
     }
 }
