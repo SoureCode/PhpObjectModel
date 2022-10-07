@@ -39,7 +39,7 @@ class ClassModel extends AbstractClassLikeModel
         return null !== $node;
     }
 
-    public function getProperty(string $name): Node\Stmt\Property
+    public function getProperty(string $name): PropertyModel
     {
         /**
          * @var Node\Stmt\Property|null $node
@@ -52,11 +52,18 @@ class ClassModel extends AbstractClassLikeModel
             throw new \InvalidArgumentException(sprintf('Property "%s" not found.', $name));
         }
 
-        return $node;
+        return new PropertyModel($node);
     }
 
-    public function addProperty(Node\Stmt\Property $property): void
+    /**
+     * If the property already exists, it will be overwritten.
+     */
+    public function addProperty(PropertyModel $property): void
     {
+        if ($this->hasProperty($property->getName())) {
+            $this->removeProperty($property->getName());
+        }
+
         $targetNode = $this->finder->findLastInstanceOf($this->node, Node\Stmt\Property::class);
 
         if (!$targetNode) {
@@ -74,31 +81,31 @@ class ClassModel extends AbstractClassLikeModel
                 $this->node->stmts,
                 $index + 1,
                 0,
-                [$property]
+                [$property->getNode()]
             );
 
             return;
         }
 
-        array_unshift($this->node->stmts, $property);
+        array_unshift($this->node->stmts, $property->getNode());
     }
 
     public function removeProperty(string $name): void
     {
         $property = $this->getProperty($name);
 
-        $this->manipulator->removeNode($this->node, $property);
+        $this->manipulator->removeNode($this->node, $property->getNode());
     }
 
     /**
-     * @return ClassMethodModel[]
+     * @return PropertyModel[]
      */
     public function getMethods(): array
     {
         $nodes = $this->finder->findInstanceOf($this->node, Node\Stmt\ClassMethod::class);
 
         return array_map(static function (Node\Stmt\ClassMethod $node) {
-            return new ClassMethodModel($node);
+            return new PropertyModel($node);
         }, $nodes);
     }
 
@@ -111,7 +118,7 @@ class ClassModel extends AbstractClassLikeModel
         return null !== $node;
     }
 
-    public function getMethod(string $name): ClassMethodModel
+    public function getMethod(string $name): PropertyModel
     {
         /**
          * @var Node\Stmt\ClassMethod|null $node
@@ -124,10 +131,10 @@ class ClassModel extends AbstractClassLikeModel
             throw new \InvalidArgumentException(sprintf('Method "%s" not found.', $name));
         }
 
-        return new ClassMethodModel($node);
+        return new PropertyModel($node);
     }
 
-    public function addMethod(ClassMethodModel $model): void
+    public function addMethod(PropertyModel $model): void
     {
         $targetNode = $this->finder->findLastInstanceOf($this->node, Node\Stmt\ClassMethod::class);
 

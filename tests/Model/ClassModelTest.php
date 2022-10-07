@@ -7,6 +7,7 @@ namespace SoureCode\PhpObjectModel\Tests\Model;
 use PHPUnit\Framework\TestCase;
 use SoureCode\PhpObjectModel\File\ClassFile;
 use SoureCode\PhpObjectModel\Model\ClassModel;
+use SoureCode\PhpObjectModel\Model\PropertyModel;
 use SoureCode\PhpObjectModel\Tests\Fixtures\AbstractBaseClassA;
 use SoureCode\PhpObjectModel\Tests\Fixtures\AbstractBaseClassB;
 
@@ -112,5 +113,48 @@ class ClassModelTest extends TestCase
         $code = $this->file->getSourceCode();
 
         self::assertStringContainsString('extends '.AbstractBaseClassB::class, $code);
+    }
+
+    public function testGetSetProperty(): void
+    {
+        /*
+            private static string $staticProperty = 'foo1';
+            protected static string $staticProperty2 = 'foo2';
+            public static string $staticProperty3 = 'foo3';
+
+            private string $property = 'foo1';
+            protected string $property2 = 'foo2';
+            public string $property3 = 'foo3';
+
+            private $property4 = 'foo4';
+            protected $property5 = 'foo5';
+            public $property6 = 'foo6';
+
+            private ?string $property7 = null;
+            protected ?string $property8 = "";
+            public ?string $property9 = null;
+         */
+        $actual = $this->class->getProperty('staticProperty');
+
+        self::assertSame('staticProperty', $actual->getName());
+        self::assertTrue($actual->isStatic());
+        self::assertFalse($actual->isPublic());
+        self::assertFalse($actual->isProtected());
+        self::assertTrue($actual->isPrivate());
+        self::assertFalse($actual->isAbstract());
+        self::assertFalse($actual->isReadonly());
+
+        $this->class->addProperty(new PropertyModel("staticProperty"));
+
+        $actual = $this->class->getProperty('staticProperty');
+
+        self::assertSame('staticProperty', $actual->getName());
+        self::assertFalse($actual->isStatic());
+        self::assertFalse($actual->isPublic());
+        self::assertFalse($actual->isProtected());
+        self::assertTrue($actual->isPrivate());
+        self::assertFalse($actual->isAbstract());
+        self::assertFalse($actual->isReadonly());
+
     }
 }
