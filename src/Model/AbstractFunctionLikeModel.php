@@ -94,7 +94,7 @@ abstract class AbstractFunctionLikeModel extends AbstractModel
     }
 
     /**
-     * @return array<Node\Stmt>|null
+     * @return array<Node>|null
      */
     public function getStatements(): ?array
     {
@@ -102,7 +102,7 @@ abstract class AbstractFunctionLikeModel extends AbstractModel
     }
 
     /**
-     * @param array<Node\Stmt> $statements
+     * @param array<Node> $statements
      */
     public function setStatements(array $statements = []): void
     {
@@ -116,7 +116,7 @@ abstract class AbstractFunctionLikeModel extends AbstractModel
         $this->node->stmts = $method->getNode()->stmts ?? [];
     }
 
-    public function addStatement(Node\Stmt $statement): void
+    public function addStatement(Node $statement): void
     {
         $builder = new BuilderFactory();
         $method = $builder->method('')->addStmt($statement)->getNode();
@@ -124,7 +124,7 @@ abstract class AbstractFunctionLikeModel extends AbstractModel
         $this->node->stmts = $method->stmts ?? [];
     }
 
-    public function removeStatement(Node\Stmt $node): void
+    public function removeStatement(Node $node): void
     {
         $this->manipulator->removeNode($this->node, $node);
     }
