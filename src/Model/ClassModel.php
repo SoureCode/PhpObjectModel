@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace SoureCode\PhpObjectModel\Model;
 
+use InvalidArgumentException;
 use PhpParser\Node;
 
 /**
@@ -27,9 +28,15 @@ class ClassModel extends AbstractClassLikeModel
      */
     public function getProperties(): array
     {
-        $propertyNodes = $this->finder->findInstanceOf($this->node, Node\Stmt\Property::class);
+        /**
+         * @var Node\Stmt\Property[] $nodes
+         */
+        $nodes = $this->finder->findInstanceOf($this->node, Node\Stmt\Property::class);
 
-        return array_map(static fn (Node\Stmt\Property $propertyNode) => new PropertyModel($propertyNode), $propertyNodes);
+        return array_map(
+            static fn (Node\Stmt\Property $node) => new PropertyModel($node),
+            $nodes
+        );
     }
 
     public function hasProperty(string $name): bool
@@ -51,7 +58,7 @@ class ClassModel extends AbstractClassLikeModel
         });
 
         if (null === $node) {
-            throw new \InvalidArgumentException(sprintf('Property "%s" not found.', $name));
+            throw new InvalidArgumentException(sprintf('Property "%s" not found.', $name));
         }
 
         return new PropertyModel($node);
@@ -77,7 +84,7 @@ class ClassModel extends AbstractClassLikeModel
         }
 
         if ($targetNode) {
-            $index = array_search($targetNode, $this->node->stmts);
+            $index = (int) array_search($targetNode, $this->node->stmts, true);
 
             array_splice(
                 $this->node->stmts,
@@ -100,14 +107,17 @@ class ClassModel extends AbstractClassLikeModel
     }
 
     /**
-     * @return PropertyModel[]
+     * @return ClassMethodModel[]
      */
     public function getMethods(): array
     {
+        /**
+         * @var Node\Stmt\ClassMethod[] $nodes
+         */
         $nodes = $this->finder->findInstanceOf($this->node, Node\Stmt\ClassMethod::class);
 
         return array_map(static function (Node\Stmt\ClassMethod $node) {
-            return new PropertyModel($node);
+            return new ClassMethodModel($node);
         }, $nodes);
     }
 
@@ -130,18 +140,25 @@ class ClassModel extends AbstractClassLikeModel
         });
 
         if (null === $node) {
-            throw new \InvalidArgumentException(sprintf('Method "%s" not found.', $name));
+            throw new InvalidArgumentException(sprintf('Method "%s" not found.', $name));
         }
 
         return new ClassMethodModel($node);
     }
 
+    /**
+     * If the method already exists, it will be overwritten.
+     */
     public function addMethod(ClassMethodModel $model): void
     {
+        if ($this->hasMethod($model->getName())) {
+            $this->removeMethod($model->getName());
+        }
+
         $targetNode = $this->finder->findLastInstanceOf($this->node, Node\Stmt\ClassMethod::class);
 
         if ($targetNode) {
-            $index = array_search($targetNode, $this->node->stmts);
+            $index = (int) array_search($targetNode, $this->node->stmts, true);
 
             array_splice(
                 $this->node->stmts,
@@ -180,7 +197,20 @@ class ClassModel extends AbstractClassLikeModel
      */
     public function getInterfaces(): array
     {
-        return $this->node->implements;
+        return array_map(static function (Node\Name $node) {
+            if ($node->hasAttribute('resolvedName')) {
+                /**
+                 * @var Node\Name\FullyQualified|null $attr
+                 */
+                $attr = $node->getAttribute('resolvedName');
+
+                if ($attr) {
+                    return $attr->toString();
+                }
+            }
+
+            return $node->toString();
+        }, $this->node->implements);
     }
 
     /**
@@ -188,25 +218,53 @@ class ClassModel extends AbstractClassLikeModel
      */
     public function implementInterface(string $name): void
     {
+        if ($this->implementsInterface($name)) {
+            return;
+        }
+
         $this->node->implements[] = new Node\Name($name);
     }
 
     /**
-     * @psalm-param  class-string $name
+     * @psalm-param class-string $name
      */
     public function removeInterface(string $name): void
     {
         $this->node->implements = array_filter($this->node->implements, static function (Node\Name $node) use ($name) {
+            if ($node->hasAttribute('resolvedName')) {
+                /**
+                 * @var Node\Name\FullyQualified|null $attr
+                 */
+                $attr = $node->getAttribute('resolvedName');
+
+                if ($attr) {
+                    return $attr->toString() !== $name;
+                }
+            }
+
             return $node->toString() !== $name;
         });
+
+        $this->node->implements = array_values($this->node->implements);
     }
 
     /**
-     * @psalm-param  class-string $name
+     * @psalm-param class-string $name
      */
     public function implementsInterface(string $name): bool
     {
         foreach ($this->node->implements as $node) {
+            if ($node->hasAttribute('resolvedName')) {
+                /**
+                 * @var Node\Name\FullyQualified|null $attr
+                 */
+                $attr = $node->getAttribute('resolvedName');
+
+                if ($attr && $attr->toString() === $name) {
+                    return true;
+                }
+            }
+
             if ($node->toString() === $name) {
                 return true;
             }
@@ -229,8 +287,16 @@ class ClassModel extends AbstractClassLikeModel
             return null;
         }
 
+        // returns the FQCN
         if ($parent->hasAttribute('resolvedName')) {
-            return $parent->getAttribute('resolvedName')->toString();
+            /**
+             * @var Node\Name\FullyQualified|null $attr
+             */
+            $attr = $parent->getAttribute('resolvedName');
+
+            if ($attr) {
+                return $attr->toString();
+            }
         }
 
         return $parent->toString();

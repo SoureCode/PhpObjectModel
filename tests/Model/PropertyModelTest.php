@@ -30,89 +30,130 @@ class PropertyModelTest extends TestCase
     {
         $property = $this->class->getProperty('property2');
 
+        $code = $this->file->getSourceCode();
+
         self::assertSame('property2', $property->getName());
+        self::assertStringContainsString("protected string \$property2 = 'foo2';", $code);
 
         $property->setName('property3');
 
+        $code = $this->file->getSourceCode();
+
         self::assertSame('property3', $property->getName());
+        self::assertStringContainsString("protected string \$property3 = 'foo2';", $code);
     }
 
     public function testSetGetStatic(): void
     {
         $property = $this->class->getProperty('property2');
 
+        $code = $this->file->getSourceCode();
+
         self::assertFalse($property->isStatic());
+        self::assertStringContainsString("protected string \$property2 = 'foo2';", $code);
 
         $property->setStatic(true);
 
+        $code = $this->file->getSourceCode();
+
         self::assertTrue($property->isStatic());
+        self::assertStringContainsString("protected static string \$property2 = 'foo2';", $code);
     }
 
     public function testGetSetAbstract(): void
     {
         $property = $this->class->getProperty('property2');
 
+        $code = $this->file->getSourceCode();
+
         self::assertFalse($property->isAbstract());
+        self::assertStringContainsString("protected string \$property2 = 'foo2';", $code);
 
         $property->setAbstract(true);
 
+        $code = $this->file->getSourceCode();
+
         self::assertTrue($property->isAbstract());
+        self::assertStringContainsString("protected abstract string \$property2 = 'foo2';", $code);
     }
 
     public function testGetSetPrivate(): void
     {
         $property = $this->class->getProperty('property2');
 
+        $code = $this->file->getSourceCode();
+
         self::assertFalse($property->isPrivate());
         self::assertFalse($property->isPublic());
         self::assertTrue($property->isProtected());
+        self::assertStringContainsString("protected string \$property2 = 'foo2';", $code);
 
-        $property->setPrivate(true);
+        $property->setPrivate();
+
+        $code = $this->file->getSourceCode();
 
         self::assertTrue($property->isPrivate());
         self::assertFalse($property->isPublic());
         self::assertFalse($property->isProtected());
+        self::assertStringContainsString("private string \$property2 = 'foo2';", $code);
     }
 
     public function testGetSetProtected(): void
     {
         $property = $this->class->getProperty('property');
 
+        $code = $this->file->getSourceCode();
+
         self::assertTrue($property->isPrivate());
         self::assertFalse($property->isPublic());
         self::assertFalse($property->isProtected());
+        self::assertStringContainsString("private string \$property = 'foo1';", $code);
 
-        $property->setProtected(true);
+        $property->setProtected();
+
+        $code = $this->file->getSourceCode();
 
         self::assertFalse($property->isPrivate());
         self::assertFalse($property->isPublic());
         self::assertTrue($property->isProtected());
+        self::assertStringContainsString("protected string \$property = 'foo1';", $code);
     }
 
     public function testGetSetPublic(): void
     {
         $property = $this->class->getProperty('property');
 
+        $code = $this->file->getSourceCode();
+
         self::assertTrue($property->isPrivate());
         self::assertFalse($property->isPublic());
         self::assertFalse($property->isProtected());
+        self::assertStringContainsString("private string \$property = 'foo1';", $code);
 
-        $property->setPublic(true);
+        $property->setPublic();
+
+        $code = $this->file->getSourceCode();
 
         self::assertFalse($property->isPrivate());
         self::assertTrue($property->isPublic());
         self::assertFalse($property->isProtected());
+        self::assertStringContainsString("public string \$property = 'foo1';", $code);
     }
 
     public function testGetSetReadonly(): void
     {
         $property = $this->class->getProperty('property');
 
+        $code = $this->file->getSourceCode();
+
         self::assertFalse($property->isReadonly());
+        self::assertStringContainsString("private string \$property = 'foo1';", $code);
 
         $property->setReadonly(true);
 
-        self::assertTrue($property->isReadonly());
-    }
+        $code = $this->file->getSourceCode();
 
+        self::assertTrue($property->isReadonly());
+        self::assertStringContainsString("private readonly string \$property = 'foo1';", $code);
+    }
 }

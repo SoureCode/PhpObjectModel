@@ -11,11 +11,6 @@ use PhpParser\Node;
  */
 class ClassMethodModel extends AbstractFunctionLikeModel
 {
-    /**
-     * @psalm-var Node\Stmt\ClassMethod
-     */
-    protected Node $node;
-
     public function __construct(Node\Stmt\ClassMethod|string $nodeOrName)
     {
         if (is_string($nodeOrName)) {
@@ -57,6 +52,13 @@ class ClassMethodModel extends AbstractFunctionLikeModel
     public function isStatic(): bool
     {
         return $this->node->isStatic();
+    }
+
+    public function setPrivate(): void
+    {
+        $this->node->flags |= Node\Stmt\Class_::MODIFIER_PRIVATE;
+        $this->node->flags &= ~Node\Stmt\Class_::MODIFIER_PROTECTED;
+        $this->node->flags &= ~Node\Stmt\Class_::MODIFIER_PUBLIC;
     }
 
     public function setStatic(bool $static): void

@@ -11,6 +11,9 @@ use SoureCode\PhpObjectModel\Node\Visitor\ReplaceNodeVisitor;
 
 class NodeManipulator
 {
+    /**
+     * @psalm-param Node|Node[] $nodes
+     */
     public function replaceNode(Node|array $nodes, Node $oldNode, Node $newNode): void
     {
         if (!is_array($nodes)) {
@@ -23,6 +26,9 @@ class NodeManipulator
         $traverser->traverse($nodes);
     }
 
+    /**
+     * @psalm-param Node|Node[] $nodes
+     */
     public function removeNode(Node|array $nodes, Node $node): void
     {
         if (!is_array($nodes)) {

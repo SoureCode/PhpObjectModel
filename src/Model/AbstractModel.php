@@ -9,7 +9,7 @@ use SoureCode\PhpObjectModel\Node\NodeFinder;
 use SoureCode\PhpObjectModel\Node\NodeManipulator;
 
 /**
- * @psalm-template T of Node
+ * @template T of Node
  */
 abstract class AbstractModel
 {

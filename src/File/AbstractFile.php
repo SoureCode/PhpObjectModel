@@ -9,10 +9,10 @@ use PhpParser\Node;
 use PhpParser\NodeTraverser;
 use PhpParser\NodeVisitor;
 use PhpParser\Parser;
-use PhpParser\PrettyPrinter\Standard;
 use PhpParser\PrettyPrinterAbstract;
 use SoureCode\PhpObjectModel\Node\NodeFinder;
 use SoureCode\PhpObjectModel\Node\NodeManipulator;
+use SoureCode\PhpObjectModel\Printer\PrettyPrinter;
 use Symfony\Component\Filesystem\Filesystem;
 
 abstract class AbstractFile
@@ -37,9 +37,11 @@ abstract class AbstractFile
 
     protected PrettyPrinterAbstract $printer;
 
-    protected string $oldSourceCode;
+    protected string $oldSourceCode = '';
 
     protected NodeManipulator $manipulator;
+
+    protected NodeFinder $finder;
 
     public function __construct(string $path)
     {
@@ -55,7 +57,7 @@ abstract class AbstractFile
             ],
         ]);
         $this->parser = new Parser\Php7($this->lexer);
-        $this->printer = new Standard();
+        $this->printer = new PrettyPrinter();
 
         $this->setSourceCode($this->load());
         $this->manipulator = new NodeManipulator();

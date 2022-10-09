@@ -4,27 +4,17 @@ declare(strict_types=1);
 
 namespace SoureCode\PhpObjectModel\Model;
 
-use PhpParser\Builder;
-use PhpParser\BuilderHelpers;
+use InvalidArgumentException;
+use PhpParser\BuilderFactory;
 use PhpParser\Node;
 
 /**
- * @psalm-template T of Node\FunctionLike
+ * @template T of Node\Expr\Closure|Node\Stmt\ClassMethod
  *
- * @psalm-extends AbstractModel<T>
+ * @extends AbstractModel<T>
  */
 abstract class AbstractFunctionLikeModel extends AbstractModel
 {
-    /**
-     * @psalm-var Node\FunctionLike
-     */
-    protected Node $node;
-
-    public function __construct(Node\FunctionLike $node)
-    {
-        parent::__construct($node);
-    }
-
     public function getReturnType(): Node\Name|Node\Identifier|Node\ComplexType|null
     {
         return $this->node->getReturnType();
@@ -44,11 +34,11 @@ abstract class AbstractFunctionLikeModel extends AbstractModel
     }
 
     /**
-     * @param array<Node\Param> $params
+     * @psalm-param array<Node\Param> $params
      */
     public function setParams(array $params): void
     {
-        $this->node->params = $params;
+        $this->node->params = array_values($params);
     }
 
     public function hasParam(string $name): bool
@@ -57,7 +47,11 @@ abstract class AbstractFunctionLikeModel extends AbstractModel
          * @var Node\Param|null $node
          */
         $node = $this->finder->findFirst($this->getParams(), function (Node $param) use ($name): bool {
-            return $param instanceof Node\Param && $param->var->name === $name;
+            if ($param instanceof Node\Param && $param->var instanceof Node\Expr\Variable) {
+                return $param->var->name === $name;
+            }
+
+            return false;
         });
 
         return null !== $node;
@@ -69,11 +63,15 @@ abstract class AbstractFunctionLikeModel extends AbstractModel
          * @var Node\Param|null $node
          */
         $node = $this->finder->findFirst($this->getParams(), function (Node $param) use ($name): bool {
-            return $param instanceof Node\Param && $param->var->name === $name;
+            if ($param instanceof Node\Param && $param->var instanceof Node\Expr\Variable) {
+                return $param->var->name === $name;
+            }
+
+            return false;
         });
 
         if (null === $node) {
-            throw new \InvalidArgumentException(sprintf('Param "%s" not found.', $name));
+            throw new InvalidArgumentException(sprintf('Param "%s" not found.', $name));
         }
 
         return $node;
@@ -81,7 +79,11 @@ abstract class AbstractFunctionLikeModel extends AbstractModel
 
     public function addParam(Node\Param $param): void
     {
-        $this->node->params[] = $param;
+        $params = $this->getParams();
+
+        $params[] = $param;
+
+        $this->setParams($params);
     }
 
     public function removeParam(string $name): void
@@ -100,21 +102,30 @@ abstract class AbstractFunctionLikeModel extends AbstractModel
     }
 
     /**
-     * @param array<Node\Stmt>|null $statements
+     * @param array<Node\Stmt> $statements
      */
-    public function setStatements(?array $statements): void
+    public function setStatements(array $statements = []): void
     {
-        $this->node->stmts = $statements;
+        $builder = new BuilderFactory();
+        $method = $builder->method('');
+
+        foreach ($statements as $statement) {
+            $method->addStmt($statement);
+        }
+
+        $this->node->stmts = $method->getNode()->stmts ?? [];
     }
 
-    public function addStatement(Node\Stmt|Builder $statement): void
+    public function addStatement(Node\Stmt $statement): void
     {
-        $this->node->stmts[] = BuilderHelpers::normalizeStmt($statement);
+        $builder = new BuilderFactory();
+        $method = $builder->method('')->addStmt($statement)->getNode();
+
+        $this->node->stmts = $method->stmts ?? [];
     }
 
     public function removeStatement(Node\Stmt $node): void
     {
         $this->manipulator->removeNode($this->node, $node);
     }
-
 }

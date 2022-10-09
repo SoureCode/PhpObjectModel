@@ -19,7 +19,7 @@ class ExampleClassA extends AbstractBaseClassA implements ExampleAInterface
     public $property6 = 'foo6';
 
     private ?string $property7 = null;
-    protected ?string $property8 = "";
+    protected ?string $property8 = '';
     public ?string $property9 = null;
 
     public function foo(): void
@@ -34,6 +34,6 @@ class ExampleClassA extends AbstractBaseClassA implements ExampleAInterface
 
     public function baz(string $foo, int $bar): string
     {
-        return sprintf("%s - %d", $foo, $bar);
+        return sprintf('%s - %d', $foo, $bar);
     }
 }

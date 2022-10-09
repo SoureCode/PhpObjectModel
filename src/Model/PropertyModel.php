@@ -56,7 +56,7 @@ class PropertyModel extends AbstractModel
 
     public function isAbstract(): bool
     {
-        return (bool)($this->node->flags & Node\Stmt\Class_::MODIFIER_ABSTRACT);
+        return (bool) ($this->node->flags & Node\Stmt\Class_::MODIFIER_ABSTRACT);
     }
 
     public function setAbstract(bool $abstract): void

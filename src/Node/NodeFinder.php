@@ -10,7 +10,7 @@ use PhpParser\NodeFinder as BaseNodeFinder;
 class NodeFinder extends BaseNodeFinder
 {
     /**
-     * @param Node|Node[] $nodes
+     * @psalm-param Node|Node[] $nodes
      */
     public function findLast(Node|array $nodes, callable $filter): ?Node
     {
@@ -25,13 +25,12 @@ class NodeFinder extends BaseNodeFinder
     }
 
     /**
-     * @param Node|Node[] $nodes
-     *
+     * @psalm-param  Node|Node[] $nodes
      * @psalm-param class-string $class
      */
     public function findLastInstanceOf(Node|array $nodes, string $class): ?Node
     {
-        return $this->findLast($nodes, function ($node) use ($class) {
+        return $this->findLast($nodes, function (Node $node) use ($class) {
             return $node instanceof $class;
         });
     }
