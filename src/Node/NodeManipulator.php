@@ -40,4 +40,23 @@ class NodeManipulator
 
         $traverser->traverse($nodes);
     }
+
+    /**
+     * @return class-string
+     */
+    public static function resolveName(Node\Name $name): string
+    {
+        if ($name->hasAttribute('resolvedName')) {
+            /**
+             * @var Node\Name\FullyQualified|null $resolvedNameAttr
+             */
+            $resolvedNameAttr = $name->getAttribute('resolvedName');
+
+            if ($resolvedNameAttr) {
+                return $resolvedNameAttr->toString();
+            }
+        }
+
+        return $name->toString();
+    }
 }

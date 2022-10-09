@@ -14,6 +14,7 @@ use SoureCode\PhpObjectModel\Tests\Fixtures\AbstractBaseClassA;
 use SoureCode\PhpObjectModel\Tests\Fixtures\AbstractBaseClassB;
 use SoureCode\PhpObjectModel\Tests\Fixtures\ExampleAInterface;
 use SoureCode\PhpObjectModel\Tests\Fixtures\ExampleBInterface;
+use SoureCode\PhpObjectModel\Type\StringType;
 
 class ClassModelTest extends TestCase
 {
@@ -190,7 +191,7 @@ class ClassModelTest extends TestCase
         $actual = new ClassMethodModel('baz');
         $actual->setPrivate();
         $actual->addStatement(new Node\Stmt\Return_(new Node\Scalar\String_('foo')));
-        $actual->setReturnType(new Node\Name('string'));
+        $actual->setReturnType(new StringType());
 
         $this->class->addMethod($actual);
 

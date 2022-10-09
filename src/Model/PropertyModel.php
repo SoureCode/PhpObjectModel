@@ -6,6 +6,7 @@ namespace SoureCode\PhpObjectModel\Model;
 
 use PhpParser\Node;
 use PhpParser\Node\Stmt\Class_;
+use SoureCode\PhpObjectModel\Type\AbstractType;
 
 /**
  * @extends AbstractModel<Node\Stmt\Property>
@@ -33,6 +34,24 @@ class PropertyModel extends AbstractModel
     public function getName(): string
     {
         return $this->node->props[0]->name->name;
+    }
+
+    public function getType(): ?AbstractType
+    {
+        if (null === $this->node->type) {
+            return null;
+        }
+
+        return AbstractType::fromNode($this->node->type);
+    }
+
+    public function setType(?AbstractType $type): void
+    {
+        if (null === $type) {
+            $this->node->type = null;
+        } else {
+            $this->node->type = $type->getNode();
+        }
     }
 
     public function setName(string $name): void

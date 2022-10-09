@@ -8,6 +8,8 @@ use PhpParser\Node;
 use PHPUnit\Framework\TestCase;
 use SoureCode\PhpObjectModel\File\ClosureFile;
 use SoureCode\PhpObjectModel\Model\ClosureModel;
+use SoureCode\PhpObjectModel\Type\IntegerType;
+use SoureCode\PhpObjectModel\Type\StringType;
 
 class ClosureModelTest extends TestCase
 {
@@ -29,11 +31,12 @@ class ClosureModelTest extends TestCase
 
     public function testGetSetReturnType(): void
     {
-        self::assertSame('NullableType', $this->closure->getReturnType()->getType());
-        self::assertSame('Identifier', $this->closure->getReturnType()->type->getType());
-        self::assertSame('string', $this->closure->getReturnType()->type->name);
+        $returnType = $this->closure->getReturnType();
 
-        $this->closure->setReturnType(new Node\Identifier('int'));
+        self::assertTrue($returnType->isNullable());
+        self::assertSame(StringType::class, $returnType::class);
+
+        $this->closure->setReturnType(new IntegerType());
 
         $code = $this->file->getSourceCode();
 

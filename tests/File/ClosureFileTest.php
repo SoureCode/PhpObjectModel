@@ -7,6 +7,7 @@ namespace SoureCode\PhpObjectModel\Tests\File;
 use PHPUnit\Framework\TestCase;
 use SoureCode\PhpObjectModel\File\ClosureFile;
 use SoureCode\PhpObjectModel\Model\ClosureModel;
+use SoureCode\PhpObjectModel\Type\StringType;
 
 class ClosureFileTest extends TestCase
 {
@@ -15,8 +16,10 @@ class ClosureFileTest extends TestCase
         $file = new ClosureFile(__DIR__.'/../Fixtures/ExampleClosureA.php');
         $closure = $file->getClosure();
         $code = $file->getSourceCode();
+        $returnType = $closure->getReturnType();
 
-        self::assertSame('NullableType', $closure->getReturnType()->getType());
+        self::assertSame(StringType::class, $returnType::class);
+        self::assertTrue($returnType->isNullable());
         self::assertStringContainsString(': ?string', $code);
 
         $file->setClosure(new ClosureModel());

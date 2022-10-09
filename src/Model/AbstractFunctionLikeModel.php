@@ -7,6 +7,7 @@ namespace SoureCode\PhpObjectModel\Model;
 use InvalidArgumentException;
 use PhpParser\BuilderFactory;
 use PhpParser\Node;
+use SoureCode\PhpObjectModel\Type\AbstractType;
 
 /**
  * @template T of Node\Expr\Closure|Node\Stmt\ClassMethod
@@ -15,14 +16,14 @@ use PhpParser\Node;
  */
 abstract class AbstractFunctionLikeModel extends AbstractModel
 {
-    public function getReturnType(): Node\Name|Node\Identifier|Node\ComplexType|null
+    public function getReturnType(): AbstractType|null
     {
-        return $this->node->getReturnType();
+        return $this->node->returnType ? AbstractType::fromNode($this->node->returnType) : null;
     }
 
-    public function setReturnType(Node\Name|Node\Identifier|Node\ComplexType|null $returnType): void
+    public function setReturnType(?AbstractType $returnType): void
     {
-        $this->node->returnType = $returnType;
+        $this->node->returnType = $returnType ? $returnType->getNode() : null;
     }
 
     /**
