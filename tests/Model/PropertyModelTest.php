@@ -16,7 +16,7 @@ class PropertyModelTest extends TestCase
 
     public function setUp(): void
     {
-        $this->file = new ClassFile(__DIR__.'/../Fixtures/ExampleClassA.php');
+        $this->file = new ClassFile(__DIR__ . '/../Fixtures/ExampleClassA.php');
         $this->class = $this->file->getClass();
     }
 

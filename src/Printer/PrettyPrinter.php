@@ -38,4 +38,39 @@ final class PrettyPrinter extends Standard
 
         return $classMethod;
     }
+
+    protected function pExpr_MethodCall(Node\Expr\MethodCall $node): string
+    {
+        if ($node->var instanceof Node\Expr\MethodCall) {
+            /**
+             * @var string $base
+             */
+            $base = $this->pDereferenceLhs($node->var);
+            /**
+             * @var string $property
+             */
+            $property = $this->pObjectProperty($node->name);
+            /**
+             * @var string $args
+             */
+            $args = $this->pMaybeMultiline($node->args);
+
+            return implode('', [
+                $base,
+                preg_match('/\n(\s+)-/', $base, $matches) ? PHP_EOL . $matches[1] : $this->nl,
+                '->',
+                $property,
+                '(',
+                $args,
+                ')',
+            ]);
+        }
+
+        /**
+         * @var string $val
+         */
+        $val = parent::pExpr_MethodCall($node);
+
+        return $val;
+    }
 }

@@ -24,7 +24,7 @@ class ClassModelTest extends TestCase
 
     public function setUp(): void
     {
-        $this->file = new ClassFile(__DIR__.'/../Fixtures/ExampleClassA.php');
+        $this->file = new ClassFile(__DIR__ . '/../Fixtures/ExampleClassA.php');
         $this->class = $this->file->getClass();
     }
 
@@ -138,7 +138,7 @@ class ClassModelTest extends TestCase
         $code = $this->file->getSourceCode();
 
         self::assertSame(AbstractBaseClassB::class, $this->class->getParent());
-        self::assertStringContainsString('extends '.AbstractBaseClassB::class, $code);
+        self::assertStringContainsString('extends ' . AbstractBaseClassB::class, $code);
     }
 
     public function testGetSetProperty(): void
@@ -222,7 +222,7 @@ class ClassModelTest extends TestCase
         self::assertEquals([ExampleAInterface::class], $interfaces);
         self::assertTrue($this->class->implementsInterface(ExampleAInterface::class));
         self::assertFalse($this->class->implementsInterface(ExampleBInterface::class));
-        self::assertStringContainsString('implements ExampleAInterface'.PHP_EOL, $code);
+        self::assertStringContainsString('implements ExampleAInterface' . PHP_EOL, $code);
 
         $this->class->implementInterface(ExampleBInterface::class);
 
@@ -233,7 +233,7 @@ class ClassModelTest extends TestCase
         self::assertEquals([ExampleAInterface::class, ExampleBInterface::class], $interfaces);
         self::assertTrue($this->class->implementsInterface(ExampleAInterface::class));
         self::assertTrue($this->class->implementsInterface(ExampleBInterface::class));
-        self::assertStringContainsString('implements ExampleAInterface, '.ExampleBInterface::class.PHP_EOL, $code);
+        self::assertStringContainsString('implements ExampleAInterface, ' . ExampleBInterface::class . PHP_EOL, $code);
 
         $this->class->removeInterface(ExampleAInterface::class);
 
@@ -244,6 +244,6 @@ class ClassModelTest extends TestCase
         self::assertEquals([ExampleBInterface::class], $interfaces);
         self::assertTrue($this->class->implementsInterface(ExampleBInterface::class));
         self::assertFalse($this->class->implementsInterface(ExampleAInterface::class));
-        self::assertStringContainsString('implements '.ExampleBInterface::class.PHP_EOL, $code);
+        self::assertStringContainsString('implements ' . ExampleBInterface::class . PHP_EOL, $code);
     }
 }

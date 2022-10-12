@@ -47,7 +47,7 @@ class TypeTest extends TestCase
             [new CallableType(), 'callable'],
             [(new CallableType())->setNullable(true), '?callable'],
             [new ClassType(ExampleBInterface::class), ExampleBInterface::class],
-            [(new ClassType(ExampleBInterface::class))->setNullable(true), '?'.ExampleBInterface::class],
+            [(new ClassType(ExampleBInterface::class))->setNullable(true), '?' . ExampleBInterface::class],
             [new FloatType(), 'float'],
             [(new FloatType())->setNullable(true), '?float'],
             [new IterableType(), 'iterable'],
@@ -59,7 +59,7 @@ class TypeTest extends TestCase
             [new VoidType(), 'void'],
             [new ResourceType(), 'resource'],
             [(new ResourceType())->setNullable(true), '?resource'],
-            [new IntersectionType([new ClassType(ExampleBInterface::class), new ClassType(ExampleAInterface::class)]), ExampleBInterface::class.'&'.ExampleAInterface::class],
+            [new IntersectionType([new ClassType(ExampleBInterface::class), new ClassType(ExampleAInterface::class)]), ExampleBInterface::class . '&' . ExampleAInterface::class],
             [new UnionType([new StringType(), new IntegerType()]), 'string|int'],
             [(new UnionType([new StringType(), new IntegerType()]))->setNullable(true), 'string|int|null'],
         ];
@@ -67,7 +67,7 @@ class TypeTest extends TestCase
 
     public function setUp(): void
     {
-        $this->file = new ClassFile(__DIR__.'/../Fixtures/ExampleClassTypes.php');
+        $this->file = new ClassFile(__DIR__ . '/../Fixtures/ExampleClassTypes.php');
         $this->class = $this->file->getClass();
     }
 
@@ -89,6 +89,6 @@ class TypeTest extends TestCase
 
         $code = $this->file->getSourceCode();
 
-        self::assertStringContainsString('private '.$expected.' $yeet;', $code);
+        self::assertStringContainsString('private ' . $expected . ' $yeet;', $code);
     }
 }

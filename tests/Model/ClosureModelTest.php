@@ -19,7 +19,7 @@ class ClosureModelTest extends TestCase
 
     public function setUp(): void
     {
-        $this->file = new ClosureFile(__DIR__.'/../Fixtures/ExampleClosureA.php');
+        $this->file = new ClosureFile(__DIR__ . '/../Fixtures/ExampleClosureA.php');
         $this->closure = $this->file->getClosure();
     }
 

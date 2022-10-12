@@ -12,7 +12,7 @@ class ClassFileTest extends TestCase
 {
     public function testGetSetClass(): void
     {
-        $file = new ClassFile(__DIR__.'/../Fixtures/ExampleClassA.php');
+        $file = new ClassFile(__DIR__ . '/../Fixtures/ExampleClassA.php');
         $class = $file->getClass();
         $code = $file->getSourceCode();
 

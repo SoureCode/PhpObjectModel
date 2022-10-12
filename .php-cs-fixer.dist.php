@@ -14,6 +14,7 @@ return (new PhpCsFixer\Config())
             'imports_order' => ['class', 'function', 'const'],
             'sort_algorithm' => 'alpha',
         ],
+        'concat_space' => ['spacing' => 'one'],
         'declare_strict_types' => true,
     ])
     ->setRiskyAllowed(true)
