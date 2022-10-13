@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace SoureCode\PhpObjectModel\ValueObject;
 
-class NamespacePathItem
+use Stringable;
+
+class NamespacePathItem implements Stringable
 {
     /**
      * @var string[]
@@ -34,20 +36,6 @@ class NamespacePathItem
     public function length(): int
     {
         return count($this->parts);
-    }
-
-    public function isRoot(): bool
-    {
-        return 0 === $this->length();
-    }
-
-    public function getParent(): ?self
-    {
-        if ($this->isRoot()) {
-            return null;
-        }
-
-        return new self(implode('\\', array_slice($this->parts, 0, -1)));
     }
 
     public static function getCommonNamespace(NamespacePathItem $classA, NamespacePathItem $classB): NamespacePathItem
@@ -81,5 +69,10 @@ class NamespacePathItem
     public function isSame(NamespacePathItem $namespace): bool
     {
         return $this->getName() === $namespace->getName();
+    }
+
+    public function __toString(): string
+    {
+        return $this->getName();
     }
 }
