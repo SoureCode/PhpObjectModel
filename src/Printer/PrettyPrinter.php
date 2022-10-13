@@ -55,9 +55,20 @@ final class PrettyPrinter extends Standard
              */
             $args = $this->pMaybeMultiline($node->args);
 
+            $indent = preg_match('/\n(\s+)-/', $base, $matches) ? PHP_EOL . $matches[1] : '';
+
+            if ('' === $indent) {
+                $indent = $this->nl;
+                $chars = strpos($base, '->');
+
+                if (false !== $chars) {
+                    $indent .= str_repeat(' ', $chars);
+                }
+            }
+
             return implode('', [
                 $base,
-                preg_match('/\n(\s+)-/', $base, $matches) ? PHP_EOL . $matches[1] : $this->nl,
+                $indent,
                 '->',
                 $property,
                 '(',
