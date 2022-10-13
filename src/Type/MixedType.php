@@ -16,7 +16,11 @@ class MixedType extends AbstractType
 
     public function setNullable(bool $nullable): AbstractType
     {
-        throw new RuntimeException('Mixed type can not be nullable.');
+        if ($nullable) {
+            throw new RuntimeException('Mixed type can not be nullable.');
+        }
+
+        return $this;
     }
 
     public function isNullable(): bool

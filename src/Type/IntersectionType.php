@@ -44,7 +44,7 @@ class IntersectionType extends ComplexType
     public function hasType(ClassType $type): bool
     {
         foreach ($this->types as $currentType) {
-            if ($currentType->getClassName() === $type->getClassName()) {
+            if ($currentType->getClassName()->isSame($type->getClassName())) {
                 return true;
             }
         }

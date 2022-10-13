@@ -22,7 +22,10 @@ class ClassFile extends AbstractFile
             throw new \Exception('Class not found.');
         }
 
-        return new ClassModel($node);
+        $model = new ClassModel($node);
+        $model->setFile($this);
+
+        return $model;
     }
 
     public function setClass(ClassModel $model): void
@@ -30,5 +33,7 @@ class ClassFile extends AbstractFile
         $oldModel = $this->getClass();
 
         $this->manipulator->replaceNode($this->statements, $oldModel->getNode(), $model->getNode());
+        $model->setFile($this);
+        $oldModel->setFile(null);
     }
 }

@@ -13,6 +13,10 @@ use PhpParser\PrettyPrinterAbstract;
 use SoureCode\PhpObjectModel\Node\NodeFinder;
 use SoureCode\PhpObjectModel\Node\NodeManipulator;
 use SoureCode\PhpObjectModel\Printer\PrettyPrinter;
+use SoureCode\PhpObjectModel\Type\AbstractType;
+use SoureCode\PhpObjectModel\Type\ClassType;
+use SoureCode\PhpObjectModel\Type\IntersectionType;
+use SoureCode\PhpObjectModel\Type\UnionType;
 use SoureCode\PhpObjectModel\ValueObject\ClassName;
 use SoureCode\PhpObjectModel\ValueObject\NamespacePathItem;
 use Symfony\Component\Filesystem\Filesystem;
@@ -123,13 +127,10 @@ abstract class AbstractFile
         $this->statements = $traverser->traverse($this->oldStatements);
     }
 
-    /**
-     * @param class-string|string $class
-     */
-    public function addUse(string $class, string $alias = null): void
+    public function addUse(ClassName $class, string $alias = null): void
     {
         $node = new Node\Stmt\Use_([
-            new Node\Stmt\UseUse(new Node\Name($class), $alias),
+            new Node\Stmt\UseUse($class->toNode(), $alias),
         ]);
 
         $targetNode = $this->finder->findLastInstanceOf($this->statements, Node\Stmt\Use_::class);
@@ -218,7 +219,7 @@ abstract class AbstractFile
             $namespaceItem = NamespacePathItem::fromString($namespace);
             $commonNamespace = NamespacePathItem::getCommonNamespace($namespaceItem, $class);
 
-            if ($commonNamespace->length() > 1) {
+            if ($commonNamespace->length() > 1 && $commonNamespace->length() === $namespaceItem->length()) {
                 return $alias . '\\' . $class->relativeTo($commonNamespace)->getName();
             }
         }
@@ -227,9 +228,73 @@ abstract class AbstractFile
             $namespaceItem = NamespacePathItem::fromString($namespace);
             $commonNamespace = NamespacePathItem::getCommonNamespace($namespaceItem, $class);
 
-            if ($commonNamespace->length() === $namespaceItem->length()) {
+            if ($commonNamespace->length() > 1 && $commonNamespace->length() === $namespaceItem->length()) {
                 return $class->relativeTo($commonNamespace)->getName();
             }
+        }
+
+        return null;
+    }
+
+    public function resolveUseName(string|ClassName $class): Node\Name
+    {
+        $class = is_string($class) ? new ClassName($class) : $class;
+        $name = $this->getUseName($class);
+
+        if (null === $name) {
+            $this->addUse($class);
+
+            return $class->toReferenceNode();
+        }
+
+        return new Node\Name($name, [
+            'resolvedName' => new Node\Name\FullyQualified($class->getName()),
+        ]);
+    }
+
+    public function resolveClassType(ClassType $type): Node\Name
+    {
+        $className = $type->getClassName();
+
+        return $this->resolveUseName($className);
+    }
+
+    public function resolveType(AbstractType $type): Node\ComplexType|Node\Name|null
+    {
+        if ($type instanceof ClassType) {
+            $name = $this->resolveClassType($type);
+
+            if ($type->isNullable()) {
+                return new Node\NullableType($name);
+            }
+
+            return $name;
+        }
+
+        if ($type instanceof UnionType || $type instanceof IntersectionType) {
+            $types = $type->getTypes();
+            /**
+             * @var Node\UnionType|Node\IntersectionType $node
+             */
+            $node = $type->getNode();
+
+            foreach ($types as $unionType) {
+                if (!($unionType instanceof ClassType)) {
+                    continue;
+                }
+
+                $typeNode = $this->resolveClassType($unionType);
+
+                $node->types = array_map(function (Node $node) use ($typeNode, $unionType): Node {
+                    if ($node instanceof Node\Name && $node->toString() === $unionType->getClassName()->getName()) {
+                        return $typeNode;
+                    }
+
+                    return $node;
+                }, $node->types);
+            }
+
+            return $node;
         }
 
         return null;

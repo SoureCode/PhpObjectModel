@@ -8,8 +8,13 @@ use PhpParser\Node;
 use PHPUnit\Framework\TestCase;
 use SoureCode\PhpObjectModel\File\ClosureFile;
 use SoureCode\PhpObjectModel\Model\ClosureModel;
+use SoureCode\PhpObjectModel\Type\ClassType;
 use SoureCode\PhpObjectModel\Type\IntegerType;
+use SoureCode\PhpObjectModel\Type\IntersectionType;
 use SoureCode\PhpObjectModel\Type\StringType;
+use SoureCode\PhpObjectModel\Type\UnionType;
+use SoureCode\PhpObjectModel\ValueObject\ClassName;
+use SoureCode\PhpObjectModel\ValueObject\NamespaceItem;
 
 class ClosureModelTest extends TestCase
 {
@@ -41,6 +46,36 @@ class ClosureModelTest extends TestCase
         $code = $this->file->getSourceCode();
 
         self::assertStringContainsString(': int', $code);
+    }
+
+    public function testSetReturnTypeAddUse(): void
+    {
+        $this->closure->setReturnType(new ClassType(NamespaceItem::class));
+
+        $code = $this->file->getSourceCode();
+
+        self::assertStringContainsString(': NamespaceItem', $code);
+        self::assertStringContainsString(sprintf('use %s;', NamespaceItem::class), $code);
+    }
+
+    public function testSetReturnTypeAddUseUnion(): void
+    {
+        $this->closure->setReturnType(new UnionType([new IntegerType(), new StringType(), new ClassType(ClassName::class)]));
+
+        $code = $this->file->getSourceCode();
+
+        self::assertStringContainsString(': int|string|ClassName', $code);
+        self::assertStringContainsString(sprintf('use %s;', ClassName::class), $code);
+    }
+
+    public function testSetReturnTypeAddUseIntersection(): void
+    {
+        $this->closure->setReturnType(new IntersectionType([new ClassType(NamespaceItem::class), new ClassType(ClassName::class)]));
+
+        $code = $this->file->getSourceCode();
+
+        self::assertStringContainsString(': NamespaceItem&ClassName', $code);
+        self::assertStringContainsString(sprintf('use %s;', ClassName::class), $code);
     }
 
     public function testGetSetAddRemoveParams(): void

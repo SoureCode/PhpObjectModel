@@ -7,6 +7,7 @@ namespace SoureCode\PhpObjectModel\Type;
 use PhpParser\Node;
 use RuntimeException;
 use SoureCode\PhpObjectModel\Node\NodeManipulator;
+use SoureCode\PhpObjectModel\ValueObject\ClassName;
 
 abstract class AbstractType
 {
@@ -95,7 +96,7 @@ abstract class AbstractType
         if ($typeNode instanceof Node\Identifier) {
             $type = self::resolveType($typeNode->name);
         } else {
-            $type = new ClassType(NodeManipulator::resolveName($typeNode));
+            $type = new ClassType(ClassName::fromNode($typeNode));
         }
 
         if (null === $type) {

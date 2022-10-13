@@ -23,7 +23,14 @@ abstract class AbstractFunctionLikeModel extends AbstractModel
 
     public function setReturnType(?AbstractType $returnType): self
     {
-        $this->node->returnType = $returnType ? $returnType->getNode() : null;
+        if (null === $returnType) {
+            $this->node->returnType = null;
+
+            return $this;
+        }
+
+        $node = $this->file?->resolveType($returnType);
+        $this->node->returnType = $node ?? $returnType->getNode();
 
         return $this;
     }
@@ -42,6 +49,9 @@ abstract class AbstractFunctionLikeModel extends AbstractModel
     public function setParams(array $params): self
     {
         $this->node->params = array_values($params);
+
+        // @todo create param model
+        // @todo class param use statement
 
         return $this;
     }

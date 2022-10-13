@@ -18,7 +18,10 @@ class ClosureFile extends AbstractFile
             return $node instanceof Node\Expr\Closure;
         });
 
-        return new ClosureModel($node);
+        $model = new ClosureModel($node);
+        $model->setFile($this);
+
+        return $model;
     }
 
     public function setClosure(ClosureModel $model): void
@@ -26,5 +29,7 @@ class ClosureFile extends AbstractFile
         $oldModel = $this->getClosure();
 
         $this->manipulator->replaceNode($this->statements, $oldModel->getNode(), $model->getNode());
+        $model->setFile($this);
+        $oldModel->setFile(null);
     }
 }

@@ -18,7 +18,7 @@ class PropertyModel extends AbstractModel
      */
     protected Node $node;
 
-    public function __construct(Node\Stmt\Property|string $nodeOrName)
+    public function __construct(Node\Stmt\Property|string $nodeOrName, ?AbstractType $type = null)
     {
         if (is_string($nodeOrName)) {
             $node = new Node\Stmt\Property(Class_::MODIFIER_PRIVATE, [
@@ -29,6 +29,10 @@ class PropertyModel extends AbstractModel
         }
 
         parent::__construct($node);
+
+        if (null !== $type) {
+            $this->setType($type);
+        }
     }
 
     public function getName(): string
@@ -50,7 +54,9 @@ class PropertyModel extends AbstractModel
         if (null === $type) {
             $this->node->type = null;
         } else {
-            $this->node->type = $type->getNode();
+            $node = $this->file?->resolveType($type) ?? $type->getNode();
+
+            $this->node->type = $node;
         }
 
         return $this;
@@ -142,7 +148,7 @@ class PropertyModel extends AbstractModel
         return $this->node->isReadonly();
     }
 
-    public function setReadonly(bool $readonly): self
+    public function setReadonly(bool $readonly = true): self
     {
         if ($readonly) {
             $this->node->flags |= Node\Stmt\Class_::MODIFIER_READONLY;

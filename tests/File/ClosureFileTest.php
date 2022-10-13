@@ -9,6 +9,7 @@ use SoureCode\PhpObjectModel\File\ClosureFile;
 use SoureCode\PhpObjectModel\Model\ClassModel;
 use SoureCode\PhpObjectModel\Model\ClosureModel;
 use SoureCode\PhpObjectModel\Type\StringType;
+use SoureCode\PhpObjectModel\ValueObject\ClassName;
 
 class ClosureFileTest extends TestCase
 {
@@ -35,7 +36,7 @@ class ClosureFileTest extends TestCase
     {
         $file = new ClosureFile(__DIR__ . '/../Fixtures/ExampleClosureA.php');
 
-        $file->addUse(ClassModel::class);
+        $file->addUse(ClassName::fromString(ClassModel::class));
 
         $code = $file->getSourceCode();
 

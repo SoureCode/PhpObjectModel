@@ -5,28 +5,24 @@ declare(strict_types=1);
 namespace SoureCode\PhpObjectModel\Type;
 
 use PhpParser\Node;
-use SoureCode\PhpObjectModel\Node\NodeManipulator;
+use SoureCode\PhpObjectModel\ValueObject\ClassName;
 
-/**
- * @psalm-param Node\Name $node
- */
 class ClassType extends AbstractType
 {
-    /**
-     * @psalm-param class-string $className
-     */
-    public function __construct(string $className)
+    public function __construct(ClassName|string $className)
     {
-        parent::__construct(new Node\Name($className));
+        parent::__construct(
+            new Node\Name((string) $className)
+        );
     }
 
-    public function getClassName(): string
+    public function getClassName(): ClassName
     {
         /**
          * @var Node\Name $node
          */
         $node = $this->node;
 
-        return NodeManipulator::resolveName($node);
+        return ClassName::fromNode($node);
     }
 }

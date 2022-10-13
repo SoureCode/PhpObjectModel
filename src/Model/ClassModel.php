@@ -7,6 +7,8 @@ namespace SoureCode\PhpObjectModel\Model;
 use InvalidArgumentException;
 use PhpParser\Node;
 use SoureCode\PhpObjectModel\Node\NodeManipulator;
+use SoureCode\PhpObjectModel\Type\AbstractType;
+use SoureCode\PhpObjectModel\ValueObject\ClassName;
 
 /**
  * @extends AbstractClassLikeModel<Node\Stmt\Class_>
@@ -35,7 +37,12 @@ class ClassModel extends AbstractClassLikeModel
         $nodes = $this->finder->findInstanceOf($this->node, Node\Stmt\Property::class);
 
         return array_map(
-            static fn (Node\Stmt\Property $node) => new PropertyModel($node),
+            function (Node\Stmt\Property $node) {
+                $model = new PropertyModel($node);
+                $model->setFile($this->file);
+
+                return $model;
+            },
             $nodes
         );
     }
@@ -62,7 +69,10 @@ class ClassModel extends AbstractClassLikeModel
             throw new InvalidArgumentException(sprintf('Property "%s" not found.', $name));
         }
 
-        return new PropertyModel($node);
+        $model = new PropertyModel($node);
+        $model->setFile($this->file);
+
+        return $model;
     }
 
     /**
@@ -72,6 +82,20 @@ class ClassModel extends AbstractClassLikeModel
     {
         if ($this->hasProperty($property->getName())) {
             $this->removeProperty($property->getName());
+        }
+
+        $node = $property->getNode();
+
+        if (null !== $node->type) {
+            $type = AbstractType::fromNode($node->type);
+
+            if (null !== $this->file) {
+                $resolveTypeNode = $this->file->resolveType($type);
+
+                if (null !== $resolveTypeNode) {
+                    $node->type = $resolveTypeNode;
+                }
+            }
         }
 
         $targetNode = $this->finder->findLastInstanceOf($this->node, Node\Stmt\Property::class);
@@ -91,13 +115,11 @@ class ClassModel extends AbstractClassLikeModel
                 $this->node->stmts,
                 $index + 1,
                 0,
-                [$property->getNode()]
+                [$node]
             );
-
-            return $this;
+        } else {
+            array_unshift($this->node->stmts, $node);
         }
-
-        array_unshift($this->node->stmts, $property->getNode());
 
         return $this;
     }
@@ -121,8 +143,11 @@ class ClassModel extends AbstractClassLikeModel
          */
         $nodes = $this->finder->findInstanceOf($this->node, Node\Stmt\ClassMethod::class);
 
-        return array_map(static function (Node\Stmt\ClassMethod $node) {
-            return new ClassMethodModel($node);
+        return array_map(function (Node\Stmt\ClassMethod $node) {
+            $model = new ClassMethodModel($node);
+            $model->setFile($this->file);
+
+            return $model;
         }, $nodes);
     }
 
@@ -148,7 +173,10 @@ class ClassModel extends AbstractClassLikeModel
             throw new InvalidArgumentException(sprintf('Method "%s" not found.', $name));
         }
 
-        return new ClassMethodModel($node);
+        $model = new ClassMethodModel($node);
+        $model->setFile($this->file);
+
+        return $model;
     }
 
     /**
@@ -160,6 +188,18 @@ class ClassModel extends AbstractClassLikeModel
             $this->removeMethod($model->getName());
         }
 
+        $node = $model->getNode();
+
+        if (null !== $node->returnType) {
+            $type = AbstractType::fromNode($node->returnType);
+
+            $nodeType = $this->file?->resolveType($type);
+
+            if (null !== $nodeType) {
+                $node->returnType = $nodeType;
+            }
+        }
+
         $targetNode = $this->finder->findLastInstanceOf($this->node, Node\Stmt\ClassMethod::class);
 
         if ($targetNode) {
@@ -169,13 +209,11 @@ class ClassModel extends AbstractClassLikeModel
                 $this->node->stmts,
                 $index + 1,
                 0,
-                [$model->getNode()]
+                [$node]
             );
-
-            return $this;
+        } else {
+            $this->node->stmts[] = $node;
         }
-
-        $this->node->stmts[] = $model->getNode();
 
         return $this;
     }
@@ -223,12 +261,16 @@ class ClassModel extends AbstractClassLikeModel
     }
 
     /**
-     * @psalm-param  class-string $name
+     * @psalm-param  ClassName|class-string $name
      */
-    public function implementInterface(string $name): self
+    public function implementInterface(ClassName|string $className): self
     {
-        if (!$this->implementsInterface($name)) {
-            $this->node->implements[] = new Node\Name($name);
+        $className = is_string($className) ? new ClassName($className) : $className;
+
+        if (!$this->implementsInterface($className)) {
+            $node = $this->file?->resolveUseName($className) ?? $className->toNode();
+
+            $this->node->implements[] = $node;
         }
 
         return $this;
@@ -249,23 +291,16 @@ class ClassModel extends AbstractClassLikeModel
     }
 
     /**
-     * @psalm-param class-string $name
+     * @param ClassName|class-string $className
      */
-    public function implementsInterface(string $name): bool
+    public function implementsInterface(ClassName|string $className): bool
     {
+        $className = is_string($className) ? new ClassName($className) : $className;
+
         foreach ($this->node->implements as $node) {
-            if ($node->hasAttribute('resolvedName')) {
-                /**
-                 * @var Node\Name\FullyQualified|null $attr
-                 */
-                $attr = $node->getAttribute('resolvedName');
+            $nodeClassName = ClassName::fromNode($node);
 
-                if ($attr && $attr->toString() === $name) {
-                    return true;
-                }
-            }
-
-            if ($node->toString() === $name) {
+            if ($nodeClassName->isSame($className)) {
                 return true;
             }
         }
@@ -303,11 +338,14 @@ class ClassModel extends AbstractClassLikeModel
     }
 
     /**
-     * @psalm-param class-string $name
+     * @psalm-param ClassName|class-string $className
      */
-    public function extend(string $name): self
+    public function extend(ClassName|string $className): self
     {
-        $this->node->extends = new Node\Name($name);
+        $className = is_string($className) ? new ClassName($className) : $className;
+        $node = $this->file?->resolveUseName($className) ?? $className->toNode();
+
+        $this->node->extends = $node;
 
         return $this;
     }

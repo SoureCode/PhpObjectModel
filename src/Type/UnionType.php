@@ -56,6 +56,10 @@ class UnionType extends ComplexType
         foreach ($node->types as $type) {
             $typeNode = self::fromNode($type);
 
+            if ($typeNode instanceof NullType) {
+                continue;
+            }
+
             if (
                 $typeNode instanceof PrimitiveType
                 || $typeNode instanceof ResourceType

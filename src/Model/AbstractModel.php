@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace SoureCode\PhpObjectModel\Model;
 
 use PhpParser\Node;
+use SoureCode\PhpObjectModel\File\AbstractFile;
 use SoureCode\PhpObjectModel\Node\NodeFinder;
 use SoureCode\PhpObjectModel\Node\NodeManipulator;
 
@@ -22,6 +23,8 @@ abstract class AbstractModel
 
     protected NodeManipulator $manipulator;
 
+    protected ?AbstractFile $file = null;
+
     /**
      * @psalm-param T $node
      */
@@ -38,5 +41,17 @@ abstract class AbstractModel
     public function getNode(): Node
     {
         return $this->node;
+    }
+
+    public function setFile(?AbstractFile $file): self
+    {
+        $this->file = $file;
+
+        return $this;
+    }
+
+    public function getFile(): ?AbstractFile
+    {
+        return $this->file;
     }
 }

@@ -7,6 +7,9 @@ namespace SoureCode\PhpObjectModel\Tests\Model;
 use PHPUnit\Framework\TestCase;
 use SoureCode\PhpObjectModel\File\ClassFile;
 use SoureCode\PhpObjectModel\Model\ClassModel;
+use SoureCode\PhpObjectModel\Type\ClassType;
+use SoureCode\PhpObjectModel\Type\StringType;
+use SoureCode\PhpObjectModel\ValueObject\ClassName;
 
 class PropertyModelTest extends TestCase
 {
@@ -155,5 +158,23 @@ class PropertyModelTest extends TestCase
 
         self::assertTrue($property->isReadonly());
         self::assertStringContainsString("private readonly string \$property = 'foo1';", $code);
+    }
+
+    public function testGetSetType(): void
+    {
+        $property = $this->class->getProperty('property');
+
+        $code = $this->file->getSourceCode();
+
+        self::assertInstanceOf(StringType::class, $property->getType());
+        self::assertStringContainsString("private string \$property = 'foo1';", $code);
+
+        $property->setType(new ClassType(ClassName::class));
+
+        $code = $this->file->getSourceCode();
+
+        self::assertInstanceOf(ClassType::class, $property->getType());
+        self::assertStringContainsString("private ClassName \$property = 'foo1';", $code);
+        self::assertStringContainsString(sprintf('use %s;', ClassName::class), $code);
     }
 }

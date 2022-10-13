@@ -14,7 +14,8 @@ use SoureCode\PhpObjectModel\Tests\Fixtures\AbstractBaseClassA;
 use SoureCode\PhpObjectModel\Tests\Fixtures\AbstractBaseClassB;
 use SoureCode\PhpObjectModel\Tests\Fixtures\ExampleAInterface;
 use SoureCode\PhpObjectModel\Tests\Fixtures\ExampleBInterface;
-use SoureCode\PhpObjectModel\Type\StringType;
+use SoureCode\PhpObjectModel\Type\ClassType;
+use SoureCode\PhpObjectModel\ValueObject\ClassName;
 
 class ClassModelTest extends TestCase
 {
@@ -138,7 +139,8 @@ class ClassModelTest extends TestCase
         $code = $this->file->getSourceCode();
 
         self::assertSame(AbstractBaseClassB::class, $this->class->getParent());
-        self::assertStringContainsString('extends ' . AbstractBaseClassB::class, $code);
+        self::assertStringContainsString('extends AbstractBaseClassB', $code);
+        self::assertStringContainsString(sprintf('use %s;', AbstractBaseClassB::class), $code);
     }
 
     public function testGetSetProperty(): void
@@ -155,7 +157,7 @@ class ClassModelTest extends TestCase
         self::assertFalse($actual->isReadonly());
         self::assertStringContainsString("private static string \$staticProperty = 'foo1';", $code);
 
-        $this->class->addProperty(new PropertyModel('staticProperty'));
+        $this->class->addProperty(new PropertyModel('staticProperty', new ClassType(ClassName::class)));
 
         $actual = $this->class->getProperty('staticProperty');
         $code = $this->file->getSourceCode();
@@ -167,7 +169,7 @@ class ClassModelTest extends TestCase
         self::assertTrue($actual->isPrivate());
         self::assertFalse($actual->isAbstract());
         self::assertFalse($actual->isReadonly());
-        self::assertStringContainsString('private $staticProperty;', $code);
+        self::assertStringContainsString('private ClassName $staticProperty;', $code);
     }
 
     public function testGetProperties(): void
@@ -191,7 +193,7 @@ class ClassModelTest extends TestCase
         $actual = new ClassMethodModel('baz');
         $actual->setPrivate();
         $actual->addStatement(new Node\Stmt\Return_(new Node\Scalar\String_('foo')));
-        $actual->setReturnType(new StringType());
+        $actual->setReturnType(new ClassType(ClassType::class));
 
         $this->class->addMethod($actual);
 
@@ -204,7 +206,8 @@ class ClassModelTest extends TestCase
         self::assertTrue($actual->isPrivate());
         self::assertFalse($actual->isAbstract());
         self::assertStringNotContainsString('public function baz(string $foo, int $bar): string', $code);
-        self::assertStringContainsString('private function baz(): string', $code);
+        self::assertStringContainsString('private function baz(): ClassType', $code);
+        self::assertStringContainsString(sprintf('use %s;', ClassType::class), $code);
         self::assertStringContainsString('return \'foo\';', $code);
         self::assertTrue($this->class->hasMethod('baz'));
 
@@ -233,7 +236,8 @@ class ClassModelTest extends TestCase
         self::assertEquals([ExampleAInterface::class, ExampleBInterface::class], $interfaces);
         self::assertTrue($this->class->implementsInterface(ExampleAInterface::class));
         self::assertTrue($this->class->implementsInterface(ExampleBInterface::class));
-        self::assertStringContainsString('implements ExampleAInterface, ' . ExampleBInterface::class . PHP_EOL, $code);
+        self::assertStringContainsString('implements ExampleAInterface, ExampleBInterface' . PHP_EOL, $code);
+        self::assertStringContainsString(sprintf('use %s;', ExampleBInterface::class), $code);
 
         $this->class->removeInterface(ExampleAInterface::class);
 
@@ -244,6 +248,7 @@ class ClassModelTest extends TestCase
         self::assertEquals([ExampleBInterface::class], $interfaces);
         self::assertTrue($this->class->implementsInterface(ExampleBInterface::class));
         self::assertFalse($this->class->implementsInterface(ExampleAInterface::class));
-        self::assertStringContainsString('implements ' . ExampleBInterface::class . PHP_EOL, $code);
+        self::assertStringContainsString('implements ExampleBInterface' . PHP_EOL, $code);
+        self::assertStringContainsString(sprintf('use %s;', ExampleBInterface::class), $code);
     }
 }
