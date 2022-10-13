@@ -129,20 +129,13 @@ abstract class AbstractFile
     public function addUse(string $class, string $alias = null): void
     {
         $node = new Node\Stmt\Use_([
-            new Node\Stmt\UseUse(new Node\Name\FullyQualified($class), $alias),
+            new Node\Stmt\UseUse(new Node\Name($class), $alias),
         ]);
 
         $targetNode = $this->finder->findLastInstanceOf($this->statements, Node\Stmt\Use_::class);
 
         if ($targetNode) {
-            $index = (int) array_search($targetNode, $this->statements, true);
-
-            array_splice(
-                $this->statements,
-                $index + 1,
-                0,
-                [$node]
-            );
+            $this->manipulator->insertAfter($this->statements, $targetNode, $node);
 
             return;
         }
@@ -234,7 +227,7 @@ abstract class AbstractFile
             $namespaceItem = NamespacePathItem::fromString($namespace);
             $commonNamespace = NamespacePathItem::getCommonNamespace($namespaceItem, $class);
 
-            if ($commonNamespace->length() > 1) {
+            if ($commonNamespace->length() === $namespaceItem->length()) {
                 return $class->relativeTo($commonNamespace)->getName();
             }
         }
@@ -245,7 +238,5 @@ abstract class AbstractFile
     // get namespace
     // set namespace
     // get use statements
-    // add use statement
     // remove use statement
-    // has use statement
 }

@@ -7,6 +7,7 @@ namespace SoureCode\PhpObjectModel\Node;
 use PhpParser\Node;
 use PhpParser\NodeTraverser;
 use RuntimeException;
+use SoureCode\PhpObjectModel\Node\Visitor\InsertAfterVisitor;
 use SoureCode\PhpObjectModel\Node\Visitor\RemoveNodeVisitor;
 use SoureCode\PhpObjectModel\Node\Visitor\ReplaceNodeVisitor;
 
@@ -38,6 +39,21 @@ class NodeManipulator
 
         $traverser = new NodeTraverser();
         $traverser->addVisitor(new RemoveNodeVisitor($node));
+
+        $traverser->traverse($nodes);
+    }
+
+    /**
+     * @psalm-param Node|Node[] $nodes
+     */
+    public function insertAfter(Node|array $nodes, Node $targetNode, Node $node): void
+    {
+        if (!is_array($nodes)) {
+            $nodes = [$nodes];
+        }
+
+        $traverser = new NodeTraverser();
+        $traverser->addVisitor(new InsertAfterVisitor($targetNode, $node));
 
         $traverser->traverse($nodes);
     }

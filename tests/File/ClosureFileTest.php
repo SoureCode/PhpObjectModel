@@ -6,6 +6,7 @@ namespace SoureCode\PhpObjectModel\Tests\File;
 
 use PHPUnit\Framework\TestCase;
 use SoureCode\PhpObjectModel\File\ClosureFile;
+use SoureCode\PhpObjectModel\Model\ClassModel;
 use SoureCode\PhpObjectModel\Model\ClosureModel;
 use SoureCode\PhpObjectModel\Type\StringType;
 
@@ -28,5 +29,16 @@ class ClosureFileTest extends TestCase
 
         self::assertStringContainsString(': void', $code);
         self::assertStringNotContainsString(': ?string', $code);
+    }
+
+    public function testAddUse()
+    {
+        $file = new ClosureFile(__DIR__ . '/../Fixtures/ExampleClosureA.php');
+
+        $file->addUse(ClassModel::class);
+
+        $code = $file->getSourceCode();
+
+        self::assertStringContainsString(sprintf('use %s;', ClassModel::class), $code);
     }
 }
