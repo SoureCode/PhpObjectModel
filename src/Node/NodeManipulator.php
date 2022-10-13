@@ -6,6 +6,7 @@ namespace SoureCode\PhpObjectModel\Node;
 
 use PhpParser\Node;
 use PhpParser\NodeTraverser;
+use RuntimeException;
 use SoureCode\PhpObjectModel\Node\Visitor\RemoveNodeVisitor;
 use SoureCode\PhpObjectModel\Node\Visitor\ReplaceNodeVisitor;
 
@@ -58,5 +59,21 @@ class NodeManipulator
         }
 
         return $name->toString();
+    }
+
+    /**
+     * Resolves a argument to the class-string FQCN or string content.
+     */
+    public static function resolveArgument(Node\Arg $arg): string
+    {
+        if ($arg->value instanceof Node\Expr\ClassConstFetch) {
+            return self::resolveName($arg->value->class);
+        }
+
+        if ($arg->value instanceof Node\Scalar\String_) {
+            return $arg->value->value;
+        }
+
+        throw new RuntimeException('Could not resolve argument.');
     }
 }
