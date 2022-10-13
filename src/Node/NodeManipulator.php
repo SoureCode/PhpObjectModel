@@ -66,7 +66,7 @@ class NodeManipulator
      */
     public static function resolveArgument(Node\Arg $arg): string
     {
-        if ($arg->value instanceof Node\Expr\ClassConstFetch) {
+        if (($arg->value instanceof Node\Expr\ClassConstFetch) && ($arg->value->class instanceof Node\Name)) {
             return self::resolveName($arg->value->class);
         }
 
