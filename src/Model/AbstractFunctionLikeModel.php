@@ -120,9 +120,15 @@ abstract class AbstractFunctionLikeModel extends AbstractModel
     public function addStatement(Node $statement): void
     {
         $builder = new BuilderFactory();
-        $method = $builder->method('')->addStmt($statement)->getNode();
+        $method = $builder->method('');
 
-        $this->node->stmts = $method->stmts ?? [];
+        foreach ($this->node->stmts ?? [] as $stmt) {
+            $method->addStmt($stmt);
+        }
+
+        $method->addStmt($statement);
+
+        $this->node->stmts = $method->getNode()->stmts ?? [];
     }
 
     public function removeStatement(Node $node): void
