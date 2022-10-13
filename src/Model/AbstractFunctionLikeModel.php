@@ -21,9 +21,11 @@ abstract class AbstractFunctionLikeModel extends AbstractModel
         return $this->node->returnType ? AbstractType::fromNode($this->node->returnType) : null;
     }
 
-    public function setReturnType(?AbstractType $returnType): void
+    public function setReturnType(?AbstractType $returnType): self
     {
         $this->node->returnType = $returnType ? $returnType->getNode() : null;
+
+        return $this;
     }
 
     /**
@@ -37,9 +39,11 @@ abstract class AbstractFunctionLikeModel extends AbstractModel
     /**
      * @psalm-param array<Node\Param> $params
      */
-    public function setParams(array $params): void
+    public function setParams(array $params): self
     {
         $this->node->params = array_values($params);
+
+        return $this;
     }
 
     public function hasParam(string $name): bool
@@ -78,20 +82,24 @@ abstract class AbstractFunctionLikeModel extends AbstractModel
         return $node;
     }
 
-    public function addParam(Node\Param $param): void
+    public function addParam(Node\Param $param): self
     {
         $params = $this->getParams();
 
         $params[] = $param;
 
         $this->setParams($params);
+
+        return $this;
     }
 
-    public function removeParam(string $name): void
+    public function removeParam(string $name): self
     {
         $param = $this->getParam($name);
 
         $this->manipulator->removeNode($this->node, $param);
+
+        return $this;
     }
 
     /**
@@ -105,7 +113,7 @@ abstract class AbstractFunctionLikeModel extends AbstractModel
     /**
      * @param array<Node> $statements
      */
-    public function setStatements(array $statements = []): void
+    public function setStatements(array $statements = []): self
     {
         $builder = new BuilderFactory();
         $method = $builder->method('');
@@ -115,9 +123,11 @@ abstract class AbstractFunctionLikeModel extends AbstractModel
         }
 
         $this->node->stmts = $method->getNode()->stmts ?? [];
+
+        return $this;
     }
 
-    public function addStatement(Node $statement): void
+    public function addStatement(Node $statement): self
     {
         $builder = new BuilderFactory();
         $method = $builder->method('');
@@ -129,10 +139,14 @@ abstract class AbstractFunctionLikeModel extends AbstractModel
         $method->addStmt($statement);
 
         $this->node->stmts = $method->getNode()->stmts ?? [];
+
+        return $this;
     }
 
-    public function removeStatement(Node $node): void
+    public function removeStatement(Node $node): self
     {
         $this->manipulator->removeNode($this->node, $node);
+
+        return $this;
     }
 }

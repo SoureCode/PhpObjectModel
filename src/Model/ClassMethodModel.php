@@ -44,9 +44,11 @@ class ClassMethodModel extends AbstractFunctionLikeModel
         return $this->node->isPublic();
     }
 
-    public function setName(string $name): void
+    public function setName(string $name): self
     {
         $this->node->name = new Node\Identifier($name);
+
+        return $this;
     }
 
     public function isStatic(): bool
@@ -54,20 +56,24 @@ class ClassMethodModel extends AbstractFunctionLikeModel
         return $this->node->isStatic();
     }
 
-    public function setPrivate(): void
+    public function setPrivate(): self
     {
         $this->node->flags |= Node\Stmt\Class_::MODIFIER_PRIVATE;
         $this->node->flags &= ~Node\Stmt\Class_::MODIFIER_PROTECTED;
         $this->node->flags &= ~Node\Stmt\Class_::MODIFIER_PUBLIC;
+
+        return $this;
     }
 
-    public function setStatic(bool $static): void
+    public function setStatic(bool $static): self
     {
         if ($static) {
             $this->node->flags |= Node\Stmt\Class_::MODIFIER_STATIC;
         } else {
             $this->node->flags &= ~Node\Stmt\Class_::MODIFIER_STATIC;
         }
+
+        return $this;
     }
 
     public function isAbstract(): bool
@@ -75,12 +81,14 @@ class ClassMethodModel extends AbstractFunctionLikeModel
         return $this->node->isAbstract();
     }
 
-    public function setAbstract(bool $abstract): void
+    public function setAbstract(bool $abstract): self
     {
         if ($abstract) {
             $this->node->flags |= Node\Stmt\Class_::MODIFIER_ABSTRACT;
         } else {
             $this->node->flags &= ~Node\Stmt\Class_::MODIFIER_ABSTRACT;
         }
+
+        return $this;
     }
 }

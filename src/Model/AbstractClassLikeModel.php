@@ -28,8 +28,10 @@ abstract class AbstractClassLikeModel extends AbstractModel
         return $node->name->name;
     }
 
-    public function setName(string $name): void
+    public function setName(string $name): self
     {
         $this->node->name = new Node\Identifier($name);
+
+        return $this;
     }
 }

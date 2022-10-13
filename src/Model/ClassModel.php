@@ -6,6 +6,7 @@ namespace SoureCode\PhpObjectModel\Model;
 
 use InvalidArgumentException;
 use PhpParser\Node;
+use SoureCode\PhpObjectModel\Node\NodeManipulator;
 
 /**
  * @extends AbstractClassLikeModel<Node\Stmt\Class_>
@@ -67,7 +68,7 @@ class ClassModel extends AbstractClassLikeModel
     /**
      * If the property already exists, it will be overwritten.
      */
-    public function addProperty(PropertyModel $property): void
+    public function addProperty(PropertyModel $property): self
     {
         if ($this->hasProperty($property->getName())) {
             $this->removeProperty($property->getName());
@@ -93,17 +94,21 @@ class ClassModel extends AbstractClassLikeModel
                 [$property->getNode()]
             );
 
-            return;
+            return $this;
         }
 
         array_unshift($this->node->stmts, $property->getNode());
+
+        return $this;
     }
 
-    public function removeProperty(string $name): void
+    public function removeProperty(string $name): self
     {
         $property = $this->getProperty($name);
 
         $this->manipulator->removeNode($this->node, $property->getNode());
+
+        return $this;
     }
 
     /**
@@ -149,7 +154,7 @@ class ClassModel extends AbstractClassLikeModel
     /**
      * If the method already exists, it will be overwritten.
      */
-    public function addMethod(ClassMethodModel $model): void
+    public function addMethod(ClassMethodModel $model): self
     {
         if ($this->hasMethod($model->getName())) {
             $this->removeMethod($model->getName());
@@ -167,16 +172,20 @@ class ClassModel extends AbstractClassLikeModel
                 [$model->getNode()]
             );
 
-            return;
+            return $this;
         }
 
         $this->node->stmts[] = $model->getNode();
+
+        return $this;
     }
 
-    public function removeMethod(string $name): void
+    public function removeMethod(string $name): self
     {
         $method = $this->getMethod($name);
         $this->manipulator->removeNode($this->node, $method->getNode());
+
+        return $this;
     }
 
     // @todo get constants
@@ -216,36 +225,27 @@ class ClassModel extends AbstractClassLikeModel
     /**
      * @psalm-param  class-string $name
      */
-    public function implementInterface(string $name): void
+    public function implementInterface(string $name): self
     {
-        if ($this->implementsInterface($name)) {
-            return;
+        if (!$this->implementsInterface($name)) {
+            $this->node->implements[] = new Node\Name($name);
         }
 
-        $this->node->implements[] = new Node\Name($name);
+        return $this;
     }
 
     /**
      * @psalm-param class-string $name
      */
-    public function removeInterface(string $name): void
+    public function removeInterface(string $name): self
     {
         $this->node->implements = array_filter($this->node->implements, static function (Node\Name $node) use ($name) {
-            if ($node->hasAttribute('resolvedName')) {
-                /**
-                 * @var Node\Name\FullyQualified|null $attr
-                 */
-                $attr = $node->getAttribute('resolvedName');
-
-                if ($attr) {
-                    return $attr->toString() !== $name;
-                }
-            }
-
-            return $node->toString() !== $name;
+            return NodeManipulator::resolveName($node) !== $name;
         });
 
         $this->node->implements = array_values($this->node->implements);
+
+        return $this;
     }
 
     /**
@@ -305,9 +305,11 @@ class ClassModel extends AbstractClassLikeModel
     /**
      * @psalm-param class-string $name
      */
-    public function extend(string $name): void
+    public function extend(string $name): self
     {
         $this->node->extends = new Node\Name($name);
+
+        return $this;
     }
 
     public function isAbstract(): bool
@@ -315,13 +317,15 @@ class ClassModel extends AbstractClassLikeModel
         return $this->node->isAbstract();
     }
 
-    public function setAbstract(bool $abstract): void
+    public function setAbstract(bool $abstract): self
     {
         if ($abstract) {
             $this->node->flags |= Node\Stmt\Class_::MODIFIER_ABSTRACT;
         } else {
             $this->node->flags &= ~Node\Stmt\Class_::MODIFIER_ABSTRACT;
         }
+
+        return $this;
     }
 
     public function isFinal(): bool
@@ -329,13 +333,15 @@ class ClassModel extends AbstractClassLikeModel
         return $this->node->isFinal();
     }
 
-    public function setFinal(bool $final): void
+    public function setFinal(bool $final): self
     {
         if ($final) {
             $this->node->flags |= Node\Stmt\Class_::MODIFIER_FINAL;
         } else {
             $this->node->flags &= ~Node\Stmt\Class_::MODIFIER_FINAL;
         }
+
+        return $this;
     }
 
     public function isReadOnly(): bool
@@ -343,12 +349,14 @@ class ClassModel extends AbstractClassLikeModel
         return $this->node->isReadOnly();
     }
 
-    public function setReadOnly(bool $readOnly): void
+    public function setReadOnly(bool $readOnly): self
     {
         if ($readOnly) {
             $this->node->flags |= Node\Stmt\Class_::MODIFIER_READONLY;
         } else {
             $this->node->flags &= ~Node\Stmt\Class_::MODIFIER_READONLY;
         }
+
+        return $this;
     }
 }
