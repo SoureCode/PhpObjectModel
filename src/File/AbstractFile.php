@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace SoureCode\PhpObjectModel\File;
 
+use LogicException;
 use PhpParser\Lexer;
 use PhpParser\Node;
 use PhpParser\NodeTraverser;
 use PhpParser\NodeVisitor;
 use PhpParser\Parser;
 use PhpParser\PrettyPrinterAbstract;
+use SoureCode\PhpObjectModel\Model\UseModel;
 use SoureCode\PhpObjectModel\Node\NodeFinder;
 use SoureCode\PhpObjectModel\Node\NodeManipulator;
 use SoureCode\PhpObjectModel\Printer\PrettyPrinter;
@@ -17,14 +19,12 @@ use SoureCode\PhpObjectModel\Type\AbstractType;
 use SoureCode\PhpObjectModel\Type\ClassType;
 use SoureCode\PhpObjectModel\Type\IntersectionType;
 use SoureCode\PhpObjectModel\Type\UnionType;
+use SoureCode\PhpObjectModel\ValueObject\AbstractNamespaceName;
 use SoureCode\PhpObjectModel\ValueObject\ClassName;
-use SoureCode\PhpObjectModel\ValueObject\NamespacePathItem;
-use Symfony\Component\Filesystem\Filesystem;
+use SoureCode\PhpObjectModel\ValueObject\NamespaceName;
 
 abstract class AbstractFile
 {
-    protected readonly string $path;
-
     protected Lexer\Emulative $lexer;
 
     /**
@@ -49,10 +49,8 @@ abstract class AbstractFile
 
     protected NodeFinder $finder;
 
-    public function __construct(string $path)
+    public function __construct(string $sourceCode)
     {
-        $this->path = $path;
-
         $this->lexer = new Lexer\Emulative([
             'usedAttributes' => [
                 'comments',
@@ -65,20 +63,10 @@ abstract class AbstractFile
         $this->parser = new Parser\Php7($this->lexer);
         $this->printer = new PrettyPrinter();
 
-        $this->setSourceCode($this->load());
+        $this->setSourceCode($sourceCode);
+
         $this->manipulator = new NodeManipulator();
         $this->finder = new NodeFinder();
-    }
-
-    protected function load(): string
-    {
-        $fs = new Filesystem();
-
-        if (!$fs->exists($this->path)) {
-            throw new \RuntimeException(sprintf('File "%s" does not exist.', $this->path));
-        }
-
-        return file_get_contents($this->path);
     }
 
     public function getOldSourceCode(): string
@@ -91,12 +79,7 @@ abstract class AbstractFile
         return $this->statements;
     }
 
-    public function save(): void
-    {
-        (new Filesystem())->dumpFile($this->path, $this->getSourceCode());
-    }
-
-    public function update(): void
+    public function reparse(): void
     {
         $this->setSourceCode($this->getSourceCode());
     }
@@ -127,18 +110,48 @@ abstract class AbstractFile
         $this->statements = $traverser->traverse($this->oldStatements);
     }
 
-    public function addUse(ClassName $class, string $alias = null): void
+    /**
+     * @return UseModel[]
+     */
+    public function getUses(): array
     {
+        /**
+         * @var Node\Stmt\Use_[] $nodes
+         */
+        $nodes = $this->finder->find($this->statements, function (Node $node) {
+            return $node instanceof Node\Stmt\Use_;
+        });
+
+        return array_map(function (Node\Stmt\Use_ $node) {
+            $model = new UseModel($node);
+            $model->setFile($this);
+
+            return $model;
+        }, $nodes);
+    }
+
+    public function addUse(AbstractNamespaceName $namespace, string $alias = null): UseModel
+    {
+        if ($this->hasUse($namespace)) {
+            throw new LogicException('Use statement already exists.');
+        }
+
+        if ($alias && $this->hasUse($alias)) {
+            throw new LogicException('Use statement alias already exists.');
+        }
+
         $node = new Node\Stmt\Use_([
-            new Node\Stmt\UseUse($class->toNode(), $alias),
+            new Node\Stmt\UseUse($namespace->toFqcnNode(), $alias),
         ]);
+
+        $model = new UseModel($node);
 
         $targetNode = $this->finder->findLastInstanceOf($this->statements, Node\Stmt\Use_::class);
 
         if ($targetNode) {
             $this->manipulator->insertAfter($this->statements, $targetNode, $node);
 
-            return;
+            return $model;
         }
 
         /**
@@ -149,24 +162,32 @@ abstract class AbstractFile
         if ($namespaceNode) {
             array_unshift($namespaceNode->stmts, $node);
 
-            return;
+            return $model;
         }
 
         array_unshift($this->statements, $node);
+
+        return $model;
     }
 
-    public function hasUse(string $class): bool
+    public function hasUse(string|AbstractNamespaceName $namespace): bool
     {
-        /**
-         * @var Node\Stmt\Use_[] $uses
-         */
-        $uses = $this->finder->findInstanceOf($this->statements, Node\Stmt\Use_::class);
+        $namespace = is_string($namespace) ? new NamespaceName($namespace) : $namespace;
+        $uses = $this->getUses();
 
-        foreach ($uses as $useNode) {
-            foreach ($useNode->uses as $useUseNode) {
-                $name = NodeManipulator::resolveName($useUseNode->name);
+        foreach ($uses as $use) {
+            if ($use->getNamespace()->isSame($namespace)) {
+                return true;
+            }
 
-                if ($name === $class) {
+            if ($use->hasAlias()) {
+                $parts = $namespace->getParts();
+                /**
+                 * @var string $firstPart
+                 */
+                $firstPart = array_shift($parts);
+
+                if ($use->getAlias() === $firstPart) {
                     return true;
                 }
             }
@@ -178,58 +199,73 @@ abstract class AbstractFile
     /**
      * @param class-string|ClassName $class
      */
-    public function getUseName(string|ClassName $class): ?string
+    public function getUseNamespaceName(string|ClassName $class): ?AbstractNamespaceName
     {
         $class = is_string($class) ? new ClassName($class) : $class;
 
-        /**
-         * @var Node\Stmt\UseUse[] $uses
-         */
-        $uses = $this->finder->findInstanceOf($this->statements, Node\Stmt\UseUse::class);
+        $uses = $this->getUses();
 
         /**
-         * @var array<string, string> $aliasUses
+         * @var array<string, UseModel> $aliasUses
          */
         $aliasUses = [];
+        $aliasNamespaces = [];
 
         /**
-         * @var array<array-key, string> $nameUses
+         * @var array<string, UseModel> $nameUses
          */
         $directUses = [];
 
-        foreach ($uses as $node) {
-            if ($node->alias) {
-                $aliasUses[$node->alias->name] = NodeManipulator::resolveName($node->name);
+        foreach ($uses as $useModel) {
+            if ($useModel->hasAlias()) {
+                $aliasUses[$useModel->getAlias()] = $useModel;
+                $aliasNamespaces[$useModel->getNamespace()->getName()] = $useModel;
             } else {
-                $directUses[] = NodeManipulator::resolveName($node->name);
+                $directUses[$useModel->getNamespace()->getName()] = $useModel;
             }
         }
 
-        if (in_array($class->getName(), $directUses, true)) {
-            return $class->getShortName();
+        // a direct use statement exist
+        if (array_key_exists($class->getName(), $directUses)) {
+            return NamespaceName::fromString($class->getShortName());
         }
 
-        if (in_array($class->getName(), $aliasUses, true)) {
-            $value = array_search($class->getName(), $aliasUses, true);
+        // Alias for a single word class names or already used types
+        if (array_key_exists($class->getName(), $aliasUses)) {
+            $model = $aliasUses[$class->getName()];
+            $alias = $model->getAlias();
 
-            return false !== $value ? $value : null;
+            return NamespaceName::fromString($alias);
         }
 
-        foreach ($aliasUses as $alias => $namespace) {
-            $namespaceItem = NamespacePathItem::fromString($namespace);
-            $commonNamespace = NamespacePathItem::getCommonNamespace($namespaceItem, $class);
+        // Alias for a class
+        if (array_key_exists($class->getName(), $aliasNamespaces)) {
+            $model = $aliasNamespaces[$class->getName()];
+            $alias = $model->getAlias();
 
-            if ($commonNamespace->length() > 1 && $commonNamespace->length() === $namespaceItem->length()) {
-                return $alias . '\\' . $class->relativeTo($commonNamespace)->getName();
+            return NamespaceName::fromString($alias);
+        }
+
+        // alias for namespaces
+        foreach ($aliasUses as $alias => $model) {
+            $namespace = $model->getNamespace();
+            $commonNamespace = $namespace->getLongestCommonNamespace($class);
+
+            if ($commonNamespace && $commonNamespace->length() === $namespace->length()) {
+                $relative = $commonNamespace->getNamespaceRelativeTo($class);
+
+                return NamespaceName::fromString($alias . '\\' . $relative->getName());
             }
         }
 
-        foreach ($directUses as $namespace) {
-            $namespaceItem = NamespacePathItem::fromString($namespace);
-            $commonNamespace = NamespacePathItem::getCommonNamespace($namespaceItem, $class);
+        foreach ($directUses as $namespaceName => $model) {
+            $namespace = $model->getNamespace();
+            $commonNamespace = $namespace->getLongestCommonNamespace($class);
 
-            if ($commonNamespace->length() > 1 && $commonNamespace->length() === $namespaceItem->length()) {
-                return $class->relativeTo($commonNamespace)->getName();
+            if ($commonNamespace && $commonNamespace->length() === $namespace->length()) {
+                $relative = $commonNamespace->getNamespaceRelativeTo($class);
+
+                return NamespaceName::fromString($namespaceName . '\\' . $relative->getName());
             }
         }
 
@@ -239,15 +275,15 @@ abstract class AbstractFile
     public function resolveUseName(string|ClassName $class): Node\Name
     {
         $class = is_string($class) ? new ClassName($class) : $class;
-        $name = $this->getUseName($class);
+        $name = $this->getUseNamespaceName($class);
 
         if (null === $name) {
             $this->addUse($class);
 
-            return $class->toReferenceNode();
+            return $class->toNode();
         }
 
-        return new Node\Name($name, [
+        return new Node\Name($name->getName(), [
             'resolvedName' => new Node\Name\FullyQualified($class->getName()),
         ]);
     }

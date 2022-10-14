@@ -16,7 +16,7 @@ class ClassFileTest extends TestCase
 {
     public function testGetSetClass(): void
     {
-        $file = new ClassFile(__DIR__ . '/../Fixtures/ExampleClassA.php');
+        $file = new ClassFile(file_get_contents(__DIR__ . '/../Fixtures/ExampleClassA.php'));
         $class = $file->getClass();
         $code = $file->getSourceCode();
 
@@ -44,15 +44,15 @@ class ClassFileTest extends TestCase
 
     public function testHasGetUse(): void
     {
-        $file = new ClassFile(__DIR__ . '/../Fixtures/ExampleClassA.php');
+        $file = new ClassFile(file_get_contents(__DIR__ . '/../Fixtures/ExampleClassA.php'));
 
         assertTrue($file->hasUse(PropertyModel::class));
         assertTrue($file->hasUse(ClosureModel::class));
         assertTrue($file->hasUse('SoureCode\\PhpObjectModel\\Model'));
 
-        self::assertSame('CM', $file->getUseName(ClosureModel::class));
-        self::assertSame('Test', $file->getUseName('SoureCode\\PhpObjectModel\\Model'));
-        self::assertSame('PropertyModel', $file->getUseName(PropertyModel::class));
-        self::assertSame('Test\\RandomClass', $file->getUseName('SoureCode\\PhpObjectModel\\Model\\RandomClass'));
+        self::assertSame('CM', $file->getUseNamespaceName(ClosureModel::class)->getName());
+        self::assertSame('Test', $file->getUseNamespaceName('SoureCode\\PhpObjectModel\\Model')->getName());
+        self::assertSame('PropertyModel', $file->getUseNamespaceName(PropertyModel::class)->getName());
+        self::assertSame('Test\\RandomClass', $file->getUseNamespaceName('SoureCode\\PhpObjectModel\\Model\\RandomClass')->getName());
     }
 }

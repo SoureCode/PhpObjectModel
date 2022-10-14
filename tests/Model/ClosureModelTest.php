@@ -14,7 +14,7 @@ use SoureCode\PhpObjectModel\Type\IntersectionType;
 use SoureCode\PhpObjectModel\Type\StringType;
 use SoureCode\PhpObjectModel\Type\UnionType;
 use SoureCode\PhpObjectModel\ValueObject\ClassName;
-use SoureCode\PhpObjectModel\ValueObject\NamespaceItem;
+use SoureCode\PhpObjectModel\ValueObject\NamespaceName;
 
 class ClosureModelTest extends TestCase
 {
@@ -24,7 +24,7 @@ class ClosureModelTest extends TestCase
 
     public function setUp(): void
     {
-        $this->file = new ClosureFile(__DIR__ . '/../Fixtures/ExampleClosureA.php');
+        $this->file = new ClosureFile(file_get_contents(__DIR__ . '/../Fixtures/ExampleClosureA.php'));
         $this->closure = $this->file->getClosure();
     }
 
@@ -50,12 +50,12 @@ class ClosureModelTest extends TestCase
 
     public function testSetReturnTypeAddUse(): void
     {
-        $this->closure->setReturnType(new ClassType(NamespaceItem::class));
+        $this->closure->setReturnType(new ClassType(NamespaceName::class));
 
         $code = $this->file->getSourceCode();
 
-        self::assertStringContainsString(': NamespaceItem', $code);
-        self::assertStringContainsString(sprintf('use %s;', NamespaceItem::class), $code);
+        self::assertStringContainsString(': NamespaceName', $code);
+        self::assertStringContainsString(sprintf('use %s;', NamespaceName::class), $code);
     }
 
     public function testSetReturnTypeAddUseUnion(): void
@@ -70,11 +70,11 @@ class ClosureModelTest extends TestCase
 
     public function testSetReturnTypeAddUseIntersection(): void
     {
-        $this->closure->setReturnType(new IntersectionType([new ClassType(NamespaceItem::class), new ClassType(ClassName::class)]));
+        $this->closure->setReturnType(new IntersectionType([new ClassType(NamespaceName::class), new ClassType(ClassName::class)]));
 
         $code = $this->file->getSourceCode();
 
-        self::assertStringContainsString(': NamespaceItem&ClassName', $code);
+        self::assertStringContainsString(': NamespaceName&ClassName', $code);
         self::assertStringContainsString(sprintf('use %s;', ClassName::class), $code);
     }
 

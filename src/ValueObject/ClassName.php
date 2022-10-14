@@ -6,13 +6,8 @@ namespace SoureCode\PhpObjectModel\ValueObject;
 
 use PhpParser\Node;
 
-class ClassName extends NamespacePathItem
+class ClassName extends AbstractNamespaceName
 {
-    public static function fromString(string $name): self
-    {
-        return new self($name);
-    }
-
     public static function fromNode(Node\Name $node): self
     {
         if ($node->hasAttribute('resolvedName')) {
@@ -29,15 +24,16 @@ class ClassName extends NamespacePathItem
         return new self($node->toString());
     }
 
-    public function toNode(): Node\Name
+    /**
+     * @param string[]|string $nameOrParts
+     */
+    public static function fromString(string|array $nameOrParts): self
     {
-        return new Node\Name($this->getName());
+        return new self($nameOrParts);
     }
 
-    public function toReferenceNode(): Node\Name
+    public function toClassConstFetchNode(): Node\Expr\ClassConstFetch
     {
-        return new Node\Name($this->getShortName(), [
-            'resolvedName' => new Node\Name\FullyQualified($this->getName()),
-        ]);
+        return new Node\Expr\ClassConstFetch($this->toNode(), 'class');
     }
 }

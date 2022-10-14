@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace SoureCode\PhpObjectModel\File;
 
+use Exception;
 use PhpParser\Node;
 use SoureCode\PhpObjectModel\Model\ClassModel;
 
@@ -19,7 +20,7 @@ class ClassFile extends AbstractFile
         });
 
         if (null === $node) {
-            throw new \Exception('Class not found.');
+            throw new Exception('Class not found.');
         }
 
         $model = new ClassModel($node);

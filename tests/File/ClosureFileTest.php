@@ -15,7 +15,7 @@ class ClosureFileTest extends TestCase
 {
     public function testGetSetClass(): void
     {
-        $file = new ClosureFile(__DIR__ . '/../Fixtures/ExampleClosureA.php');
+        $file = new ClosureFile(file_get_contents(__DIR__ . '/../Fixtures/ExampleClosureA.php'));
         $closure = $file->getClosure();
         $code = $file->getSourceCode();
         $returnType = $closure->getReturnType();

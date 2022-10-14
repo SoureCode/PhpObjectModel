@@ -53,6 +53,9 @@ phpunit:
 codesniffer:
 	@$(EXEC) vendor/bin/phpcs --standard=PSR12 src
 
+baseline:
+	@$(EXEC) vendor/bin/psalm --set-baseline=psalm-baseline.xml
+
 ## Run either static analysis and tests
 ci: php-cs-fixer psalm codesniffer phpunit
 
