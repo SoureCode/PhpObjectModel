@@ -57,6 +57,7 @@ class ClassFile extends AbstractFile
             return $this;
         }
 
+        $class->setFile($this);
         $this->statements = [...$this->statements, $class->getNode()];
 
         return $this;
