@@ -17,11 +17,21 @@ class UseModel extends AbstractModel
 {
     protected Node\Stmt\UseUse $useUse;
 
-    public function __construct(Node\Stmt\Use_ $node)
+    public function __construct(Node\Stmt\Use_|string|NamespaceName $nodeOrName, string $alias = null)
     {
-        parent::__construct($node);
+        if (is_string($nodeOrName)) {
+            $nodeOrName = NamespaceName::fromString($nodeOrName);
+        }
 
-        $this->useUse = $node->uses[0];
+        if ($nodeOrName instanceof NamespaceName) {
+            $nodeOrName = new Node\Stmt\Use_([
+                new Node\Stmt\UseUse($nodeOrName->toNode(), $alias),
+            ]);
+        }
+
+        parent::__construct($nodeOrName);
+
+        $this->useUse = $nodeOrName->uses[0];
     }
 
     public function getNamespace(): AbstractNamespaceName
