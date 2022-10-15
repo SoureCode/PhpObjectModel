@@ -10,6 +10,13 @@ use SoureCode\PhpObjectModel\Model\ClassModel;
 
 class ClassFile extends AbstractFile
 {
+    public function hasClass(): bool
+    {
+        return null !== $this->finder->findFirst($this->statements, function (Node $node) {
+            return $node instanceof Node\Stmt\Class_;
+        });
+    }
+
     public function getClass(): ClassModel
     {
         /**
@@ -29,12 +36,20 @@ class ClassFile extends AbstractFile
         return $model;
     }
 
-    public function setClass(ClassModel $model): void
+    public function setClass(ClassModel $class): self
     {
-        $oldModel = $this->getClass();
+        if ($this->hasClass()) {
+            $oldClass = $this->getClass();
 
-        $this->manipulator->replaceNode($this->statements, $oldModel->getNode(), $model->getNode());
-        $model->setFile($this);
-        $oldModel->setFile(null);
+            $this->manipulator->replaceNode($this->statements, $oldClass->getNode(), $class->getNode());
+            $class->setFile($this);
+            $oldClass->setFile(null);
+
+            return $this;
+        }
+
+        $this->statements = [...$this->statements, $class->getNode()];
+
+        return $this;
     }
 }
