@@ -51,7 +51,7 @@ abstract class AbstractFile
 
     protected NodeFinder $finder;
 
-    public function __construct(string $sourceCode)
+    public function __construct(string $sourceCode = '<?php')
     {
         $this->lexer = new Lexer\Emulative([
             'usedAttributes' => [

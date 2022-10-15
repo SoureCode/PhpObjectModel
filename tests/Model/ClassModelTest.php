@@ -7,6 +7,7 @@ namespace SoureCode\PhpObjectModel\Tests\Model;
 use PhpParser\Node;
 use PHPUnit\Framework\TestCase;
 use SoureCode\PhpObjectModel\File\ClassFile;
+use SoureCode\PhpObjectModel\Model\AttributeModel;
 use SoureCode\PhpObjectModel\Model\ClassMethodModel;
 use SoureCode\PhpObjectModel\Model\ClassModel;
 use SoureCode\PhpObjectModel\Model\DeclareModel;
@@ -268,5 +269,53 @@ class ClassModelTest extends TestCase
         $declare = $file->getDeclare();
 
         self::assertSame($model->getNode(), $declare->getNode());
+    }
+
+    public function testGetSetHasAttribute(): void
+    {
+        $file = (new ClassFile(
+            <<<HEREDOC
+
+<?php
+
+use Doctrine\ORM\Mapping as ORM;
+
+#[ORM\Entity]
+class Foo
+{
+}
+
+HEREDOC
+        ));
+
+        $class = $file->getClass();
+
+        self::assertTrue($class->hasAttribute('Doctrine\\ORM\\Mapping\\Entity'));
+        self::assertFalse($class->hasAttribute('Doctrine\\ORM\\Mapping\\Table'));
+
+        $class->addAttribute(
+            (new AttributeModel('Doctrine\\ORM\\Mapping\\Table'))
+                ->setArguments([
+                    new Node\Arg(new Node\Scalar\String_('foo')),
+                ])
+        );
+
+        $class->getAttribute('Doctrine\\ORM\\Mapping\\Entity')
+            ->addArgument(new Node\Arg(new Node\Scalar\String_('bar')));
+
+        self::assertTrue($class->hasAttribute('Doctrine\\ORM\\Mapping\\Table'));
+        self::assertTrue($class->hasAttribute('Doctrine\\ORM\\Mapping\\Entity'));
+
+        $code = $file->getSourceCode();
+
+        self::assertStringContainsString('use Doctrine\\ORM\\Mapping as ORM;', $code);
+        self::assertStringContainsString("#[ORM\\Entity('bar')]", $code);
+        self::assertStringContainsString("#[ORM\\Table('foo')]", $code);
+
+        $class->removeAttribute('Doctrine\\ORM\\Mapping\\Entity');
+
+        $code = $file->getSourceCode();
+
+        self::assertStringNotContainsString("#[ORM\\Entity('bar')]", $code);
     }
 }
