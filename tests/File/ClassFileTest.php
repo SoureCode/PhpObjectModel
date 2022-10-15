@@ -8,6 +8,7 @@ use PHPUnit\Framework\TestCase;
 use SoureCode\PhpObjectModel\File\ClassFile;
 use SoureCode\PhpObjectModel\Model\ClassModel;
 use SoureCode\PhpObjectModel\Model\ClosureModel;
+use SoureCode\PhpObjectModel\Model\NamespaceModel;
 use SoureCode\PhpObjectModel\Model\PropertyModel;
 
 use function PHPUnit\Framework\assertTrue;
@@ -54,5 +55,31 @@ class ClassFileTest extends TestCase
         self::assertSame('Test', $file->getUseNamespaceName('SoureCode\\PhpObjectModel\\Model')->getName());
         self::assertSame('PropertyModel', $file->getUseNamespaceName(PropertyModel::class)->getName());
         self::assertSame('Test\\RandomClass', $file->getUseNamespaceName('SoureCode\\PhpObjectModel\\Model\\RandomClass')->getName());
+    }
+
+    public function testSetNamespace(): void
+    {
+        $file = new ClassFile(
+            <<<SOURCECODE
+<?php
+
+declare(strict_types=1);
+
+use Acme\ExampleInterface;
+use Acme\ExampleAInterface;
+
+class ExampleClass implements ExampleInterface, ExampleAInterface
+{
+    public function foo(): void
+    {
+    }
+}
+SOURCECODE);
+
+        $file->setNamespace(new NamespaceModel('Acme\\Foo'));
+
+        $code = $file->getSourceCode();
+
+        self::assertStringContainsString('namespace Acme\\Foo;', $code);
     }
 }

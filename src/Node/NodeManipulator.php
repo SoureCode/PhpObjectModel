@@ -30,8 +30,10 @@ class NodeManipulator
 
     /**
      * @psalm-param Node|Node[] $nodes
+     *
+     * @return Node[]
      */
-    public function removeNode(Node|array $nodes, Node $node): void
+    public function removeNode(Node|array $nodes, Node $node): array
     {
         if (!is_array($nodes)) {
             $nodes = [$nodes];
@@ -40,7 +42,7 @@ class NodeManipulator
         $traverser = new NodeTraverser();
         $traverser->addVisitor(new RemoveNodeVisitor($node));
 
-        $traverser->traverse($nodes);
+        return $traverser->traverse($nodes);
     }
 
     /**

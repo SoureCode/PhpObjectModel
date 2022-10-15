@@ -11,6 +11,7 @@ use PhpParser\NodeTraverser;
 use PhpParser\NodeVisitor;
 use PhpParser\Parser;
 use PhpParser\PrettyPrinterAbstract;
+use SoureCode\PhpObjectModel\Model\NamespaceModel;
 use SoureCode\PhpObjectModel\Model\UseModel;
 use SoureCode\PhpObjectModel\Node\NodeFinder;
 use SoureCode\PhpObjectModel\Node\NodeManipulator;
@@ -336,7 +337,59 @@ abstract class AbstractFile
         return null;
     }
 
-    // get namespace
+    public function hasNamespace(): bool
+    {
+        $node = $this->finder->findFirstInstanceOf($this->statements, Node\Stmt\Namespace_::class);
+
+        return null !== $node;
+    }
+
+    public function getNamespace(): NamespaceModel
+    {
+        /**
+         * @var Node\Stmt\Namespace_|null $node
+         */
+        $node = $this->finder->findFirstInstanceOf($this->statements, Node\Stmt\Namespace_::class);
+
+        if (null === $node) {
+            throw new \RuntimeException('No namespace found');
+        }
+
+        $model = new NamespaceModel($node);
+        $model->setFile($this);
+
+        return $model;
+    }
+
+    public function setNamespace(NamespaceModel $model): self
+    {
+        if ($this->hasNamespace()) {
+            $namespace = $this->getNamespace();
+
+            $this->manipulator->replaceNode($this->statements, $namespace->getNode(), $model->getNode());
+
+            return $this;
+        }
+
+        /**
+         * @var Node\Stmt[] $statements
+         */
+        $statements = array_filter($this->statements, static function (Node $node): bool {
+            return !$node instanceof Node\Stmt\Declare_;
+        });
+
+        foreach ($statements as $statement) {
+            $this->statements = $this->manipulator->removeNode($this->statements, $statement);
+        }
+
+        $node = $model->getNode();
+        $node->stmts = [...$statements];
+
+        $this->statements = [...$this->statements, $node];
+
+        return $this;
+    }
+
     // set namespace
     // get use statements
     // remove use statement
