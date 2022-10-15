@@ -46,9 +46,11 @@ class NodeManipulator
     }
 
     /**
-     * @psalm-param Node|Node[] $nodes
+     * @param Node|Node[] $nodes
+     *
+     * @return Node[]
      */
-    public function insertAfter(Node|array $nodes, Node $targetNode, Node $node): void
+    public function insertAfter(Node|array $nodes, Node $targetNode, Node $node): array
     {
         if (!is_array($nodes)) {
             $nodes = [$nodes];
@@ -57,7 +59,7 @@ class NodeManipulator
         $traverser = new NodeTraverser();
         $traverser->addVisitor(new InsertAfterVisitor($targetNode, $node));
 
-        $traverser->traverse($nodes);
+        return $traverser->traverse($nodes);
     }
 
     /**

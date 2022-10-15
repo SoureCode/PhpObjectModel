@@ -151,7 +151,15 @@ abstract class AbstractFile
         $targetNode = $this->finder->findLastInstanceOf($this->statements, Node\Stmt\Use_::class);
 
         if ($targetNode) {
-            $this->manipulator->insertAfter($this->statements, $targetNode, $node);
+            $this->statements = $this->manipulator->insertAfter($this->statements, $targetNode, $node);
+
+            return $model;
+        }
+
+        $targetNode = $this->finder->findLastInstanceOf($this->statements, Node\Stmt\Declare_::class);
+
+        if ($targetNode) {
+            $this->statements = $this->manipulator->insertAfter($this->statements, $targetNode, $node);
 
             return $model;
         }

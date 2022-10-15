@@ -8,8 +8,10 @@ use PHPUnit\Framework\TestCase;
 use SoureCode\PhpObjectModel\File\ClassFile;
 use SoureCode\PhpObjectModel\Model\ClassModel;
 use SoureCode\PhpObjectModel\Model\ClosureModel;
+use SoureCode\PhpObjectModel\Model\DeclareModel;
 use SoureCode\PhpObjectModel\Model\NamespaceModel;
 use SoureCode\PhpObjectModel\Model\PropertyModel;
+use SoureCode\PhpObjectModel\ValueObject\NamespaceName;
 
 use function PHPUnit\Framework\assertTrue;
 
@@ -33,16 +35,6 @@ class ClassFileTest extends TestCase
         self::assertStringNotContainsString('class ExampleClassA', $code);
     }
 
-    /*
- *  use SoureCode\PhpObjectModel\Model as Test;
-    use SoureCode\PhpObjectModel\Model\PropertyModel;
-    use SoureCode\PhpObjectModel\Model\ClosureModel as CM;
-
-    Test\ClassModel
-    PropertyModel
-    CM
- */
-
     public function testHasGetUse(): void
     {
         $file = new ClassFile(file_get_contents(__DIR__ . '/../Fixtures/ExampleClassA.php'));
@@ -55,6 +47,18 @@ class ClassFileTest extends TestCase
         self::assertSame('Test', $file->getUseNamespaceName('SoureCode\\PhpObjectModel\\Model')->getName());
         self::assertSame('PropertyModel', $file->getUseNamespaceName(PropertyModel::class)->getName());
         self::assertSame('Test\\RandomClass', $file->getUseNamespaceName('SoureCode\\PhpObjectModel\\Model\\RandomClass')->getName());
+    }
+
+    public function testAddUseInsertsUseAfterDeclare(): void
+    {
+        $file = (new ClassFile('<?php'))
+            ->setDeclare((new DeclareModel())->setStrictTypes(true));
+
+        $file->addUse(NamespaceName::fromString('SoureCode\\PhpObjectModel\\Model\\ClassModel'));
+
+        $code = $file->getSourceCode();
+
+        self::assertStringContainsString("declare(strict_types=1);\nuse SoureCode\\PhpObjectModel\\Model\\ClassModel;", $code);
     }
 
     public function testSetNamespace(): void
@@ -74,7 +78,8 @@ class ExampleClass implements ExampleInterface, ExampleAInterface
     {
     }
 }
-SOURCECODE);
+SOURCECODE
+        );
 
         $file->setNamespace(new NamespaceModel('Acme\\Foo'));
 
