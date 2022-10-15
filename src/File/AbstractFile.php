@@ -390,7 +390,5 @@ abstract class AbstractFile
         return $this;
     }
 
-    // set namespace
-    // get use statements
-    // remove use statement
+    // @todo remove use statement
 }
