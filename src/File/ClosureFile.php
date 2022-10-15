@@ -36,13 +36,15 @@ class ClosureFile extends AbstractFile
             return $this;
         }
 
-        $this->statements = [...$this->statements, $model->getNode()];
+        $this->statements = [...$this->statements, new Node\Stmt\Return_(
+            $model->getNode()
+        )];
         $model->setFile($this);
 
         return $this;
     }
 
-    private function hasClosure()
+    private function hasClosure(): bool
     {
         return null !== $this->finder->findFirst($this->statements, function (Node $node) {
             return $node instanceof Node\Expr\Closure;
