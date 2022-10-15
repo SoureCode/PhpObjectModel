@@ -1,7 +1,7 @@
-
 # PhpObjectModel
 
-A superset to the [PHP Parser](https://github.com/nikic/PHP-Parser) library that allows you to parse and manipulate PHP code.
+A superset to the [PHP Parser](https://github.com/nikic/PHP-Parser) library that allows you to parse and manipulate PHP
+code.
 The idea is to create a model to manipulate PHP code like in javascript.
 
 - [Limits](./docs/limits.md)
@@ -20,20 +20,40 @@ composer require sourecode/php-object-model
 <?php
 
 use SoureCode\PhpObjectModel\File\ClassFile;
+use SoureCode\PhpObjectModel\Model\ClassModel;
+use SoureCode\PhpObjectModel\Model\PropertyModel;
+use SoureCode\PhpObjectModel\Type\StringType;
+use SoureCode\PhpObjectModel\ValueObject\NamespaceName;
 
-$file = new ClassFile(__DIR__.'/Foo.php');
+$classFile = new ClassFile('<?php');
+$classFile
+    ->setDeclare((new DeclareModel())->setStrictTypes(true))
+    ->setNamespace(new NamespaceModel(NamespaceName::fromString('App\\Foo')))
+    ->setClass(
+        (new ClassModel('Foo'))
+            ->addProperty(
+                (new PropertyModel('foo'))
+                ->setType(new StringType())
+                ->setPublic(true)
+            )
+    );
 
-// Get the class
-$class = $file->getClass();
+echo $classFile->getSourceCode();
+```
 
-// Get the class name
-$class->getName();
+Generates something like this:
 
-// Set the class name
-$class->setName('Foo');
+```php
+<?php
 
-// Save the file
-$file->save();
+declare(strict_types=1);
+
+namespace App\Foo;
+
+class Foo
+{
+    public string $foo;
+}
 ```
 
 For more examples see the [tests](./tests).
