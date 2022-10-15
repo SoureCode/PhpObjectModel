@@ -325,9 +325,6 @@ class ClassModel extends AbstractClassLikeModel
         return false;
     }
 
-    /**
-     * @psalm-return class-string|null
-     */
     public function getParent(): ?string
     {
         /**

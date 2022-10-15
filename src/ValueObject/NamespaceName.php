@@ -11,7 +11,7 @@ class NamespaceName extends AbstractNamespaceName
     /**
      * @param string[]|string $nameOrParts
      */
-    public static function fromString(string|array $nameOrParts): self
+    public static function fromString(array|string $nameOrParts): self
     {
         return new self($nameOrParts);
     }

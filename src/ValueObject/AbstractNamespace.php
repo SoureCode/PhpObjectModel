@@ -46,9 +46,6 @@ abstract class AbstractNamespace implements Stringable
         return $this->getName() === $namespace->getName();
     }
 
-    /**
-     * @psalm-return class-string
-     */
     public function getName(): string
     {
         return implode('\\', $this->parts);

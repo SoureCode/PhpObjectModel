@@ -132,7 +132,7 @@ abstract class AbstractFile
         }, $nodes);
     }
 
-    public function addUse(UseModel|string|AbstractNamespaceName $model, string $alias = null): UseModel
+    public function addUse(UseModel|string|AbstractNamespaceName $model, string $alias = null): self
     {
         if ($alias && $this->hasUse($alias)) {
             throw new LogicException('Use statement alias already exists.');
@@ -159,15 +159,7 @@ abstract class AbstractFile
         if ($targetNode) {
             $this->statements = $this->manipulator->insertAfter($this->statements, $targetNode, $node);
 
-            return $model;
-        }
-
-        $targetNode = $this->finder->findLastInstanceOf($this->statements, Node\Stmt\Declare_::class);
-
-        if ($targetNode) {
-            $this->statements = $this->manipulator->insertAfter($this->statements, $targetNode, $node);
-
-            return $model;
+            return $this;
         }
 
         /**
@@ -178,12 +170,20 @@ abstract class AbstractFile
         if ($namespaceNode) {
             array_unshift($namespaceNode->stmts, $node);
 
-            return $model;
+            return $this;
+        }
+
+        $targetNode = $this->finder->findLastInstanceOf($this->statements, Node\Stmt\Declare_::class);
+
+        if ($targetNode) {
+            $this->statements = $this->manipulator->insertAfter($this->statements, $targetNode, $node);
+
+            return $this;
         }
 
         array_unshift($this->statements, $node);
 
-        return $model;
+        return $this;
     }
 
     public function hasUse(string|AbstractNamespaceName|UseModel $namespace): bool

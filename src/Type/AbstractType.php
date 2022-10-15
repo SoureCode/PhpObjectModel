@@ -123,7 +123,11 @@ abstract class AbstractType
 
                 $typeNode = self::fromString($type);
 
-                if ($typeNode instanceof PrimitiveType || $typeNode instanceof ResourceType || $typeNode instanceof ClassType) {
+                if (
+                    $typeNode instanceof PrimitiveType ||
+                    $typeNode instanceof ResourceType ||
+                    $typeNode instanceof ClassType
+                ) {
                     $typeNodes[] = $typeNode;
                 } else {
                     throw new RuntimeException('Union type can only contain primitive, resource or class types.');

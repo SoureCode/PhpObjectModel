@@ -61,6 +61,20 @@ class ClassFileTest extends TestCase
         self::assertStringContainsString("declare(strict_types=1);\nuse SoureCode\\PhpObjectModel\\Model\\ClassModel;", $code);
     }
 
+    public function testAddUserAfterNamespace()
+    {
+        $file = new ClassFile();
+
+        $file
+            ->setDeclare((new DeclareModel())->setStrictTypes(true))
+            ->setNamespace('Foo\\Bar')
+            ->addUse('Doctrine\\ORM\\Mapping', 'ORM');
+
+        $code = $file->getSourceCode();
+
+        self::assertStringContainsString("namespace Foo\\Bar;\n\nuse Doctrine\\ORM\\Mapping as ORM;", $code);
+    }
+
     public function testSetNamespace(): void
     {
         $file = new ClassFile(
