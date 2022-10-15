@@ -8,6 +8,9 @@ use PhpParser\Node;
 use PHPUnit\Framework\TestCase;
 use SoureCode\PhpObjectModel\File\ClosureFile;
 use SoureCode\PhpObjectModel\Model\ClosureModel;
+use SoureCode\PhpObjectModel\Model\ParameterModel;
+use SoureCode\PhpObjectModel\Tests\Fixtures\ExampleAInterface;
+use SoureCode\PhpObjectModel\Tests\Fixtures\ExampleBInterface;
 use SoureCode\PhpObjectModel\Type\ClassType;
 use SoureCode\PhpObjectModel\Type\IntegerType;
 use SoureCode\PhpObjectModel\Type\IntersectionType;
@@ -81,10 +84,8 @@ class ClosureModelTest extends TestCase
     public function testGetSetAddRemoveParams(): void
     {
         self::assertCount(2, $this->closure->getParams());
-        self::assertSame('Param', $this->closure->getParam('a')->getType());
-        self::assertSame('Param', $this->closure->getParam('b')->getType());
-        self::assertSame('ExampleBInterface', (string) $this->closure->getParam('a')->type);
-        self::assertSame('ExampleAInterface', (string) $this->closure->getParam('b')->type);
+        self::assertSame(ExampleBInterface::class, $this->closure->getParam('a')->getType()->getClassName()->getName());
+        self::assertSame(ExampleAInterface::class, $this->closure->getParam('b')->getType()->getClassName()->getName());
 
         self::assertTrue($this->closure->hasParam('a'));
         self::assertTrue($this->closure->hasParam('b'));
@@ -93,12 +94,12 @@ class ClosureModelTest extends TestCase
         self::assertFalse($this->closure->hasParam('baz'));
 
         $this->closure->setParams([
-            new Node\Param(new Node\Expr\Variable('foo')),
-            new Node\Param(new Node\Expr\Variable('dolor')),
-            new Node\Param(new Node\Expr\Variable('bar')),
+            new ParameterModel('foo'),
+            new ParameterModel('dolor'),
+            new ParameterModel('bar'),
         ]);
 
-        $this->closure->addParam(new Node\Param(new Node\Expr\Variable('baz')));
+        $this->closure->addParam(new ParameterModel('baz'));
 
         self::assertTrue($this->closure->hasParam('foo'));
         self::assertTrue($this->closure->hasParam('bar'));

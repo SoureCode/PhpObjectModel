@@ -36,22 +36,28 @@ abstract class AbstractFunctionLikeModel extends AbstractModel
     }
 
     /**
-     * @return array<Node\Param>
+     * @return array<ParameterModel>
      */
     public function getParams(): array
     {
-        return $this->node->params;
+        return array_map(function (Node\Param $param) {
+            $model = new ParameterModel($param);
+            $model->setFile($this->file);
+
+            return $model;
+        }, $this->node->params);
     }
 
     /**
-     * @psalm-param array<Node\Param> $params
+     * @psalm-param array<ParameterModel> $params
      */
     public function setParams(array $params): self
     {
-        $this->node->params = array_values($params);
+        $this->node->params = [];
 
-        // @todo create param model
-        // @todo class param use statement
+        foreach ($params as $param) {
+            $this->addParam($param);
+        }
 
         return $this;
     }
@@ -61,7 +67,7 @@ abstract class AbstractFunctionLikeModel extends AbstractModel
         /**
          * @var Node\Param|null $node
          */
-        $node = $this->finder->findFirst($this->getParams(), function (Node $param) use ($name): bool {
+        $node = $this->finder->findFirst($this->node, function (Node $param) use ($name): bool {
             if ($param instanceof Node\Param && $param->var instanceof Node\Expr\Variable) {
                 return $param->var->name === $name;
             }
@@ -72,12 +78,12 @@ abstract class AbstractFunctionLikeModel extends AbstractModel
         return null !== $node;
     }
 
-    public function getParam(string $name): Node\Param
+    public function getParam(string $name): ParameterModel
     {
         /**
          * @var Node\Param|null $node
          */
-        $node = $this->finder->findFirst($this->getParams(), function (Node $param) use ($name): bool {
+        $node = $this->finder->findFirst($this->node, function (Node $param) use ($name): bool {
             if ($param instanceof Node\Param && $param->var instanceof Node\Expr\Variable) {
                 return $param->var->name === $name;
             }
@@ -89,16 +95,35 @@ abstract class AbstractFunctionLikeModel extends AbstractModel
             throw new InvalidArgumentException(sprintf('Param "%s" not found.', $name));
         }
 
-        return $node;
+        $model = new ParameterModel($node);
+
+        if ($this->file) {
+            $model->setFile($this->file);
+        }
+
+        return $model;
     }
 
-    public function addParam(Node\Param $param): self
+    public function addParam(ParameterModel $param): self
     {
-        $params = $this->getParams();
+        $this->node->params = [
+            ...$this->node->params,
+            $param->getNode(),
+        ];
 
-        $params[] = $param;
+        $param->setFile($this->file);
 
-        $this->setParams($params);
+        if (null !== $this->file) {
+            $type = $param->getType();
+
+            if (null !== $type) {
+                $name = $this->file->resolveType($type);
+
+                if (null !== $name) {
+                    $param->setType(AbstractType::fromNode($name));
+                }
+            }
+        }
 
         return $this;
     }
@@ -107,7 +132,9 @@ abstract class AbstractFunctionLikeModel extends AbstractModel
     {
         $param = $this->getParam($name);
 
-        $this->manipulator->removeNode($this->node, $param);
+        $this->manipulator->removeNode($this->node, $param->getNode());
+
+        $param->setFile(null);
 
         return $this;
     }
