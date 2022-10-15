@@ -24,12 +24,28 @@ class ClosureFile extends AbstractFile
         return $model;
     }
 
-    public function setClosure(ClosureModel $model): void
+    public function setClosure(ClosureModel $model): self
     {
-        $oldModel = $this->getClosure();
+        if ($this->hasClosure()) {
+            $oldModel = $this->getClosure();
 
-        $this->manipulator->replaceNode($this->statements, $oldModel->getNode(), $model->getNode());
+            $this->manipulator->replaceNode($this->statements, $oldModel->getNode(), $model->getNode());
+            $model->setFile($this);
+            $oldModel->setFile(null);
+
+            return $this;
+        }
+
+        $this->statements = [...$this->statements, $model->getNode()];
         $model->setFile($this);
-        $oldModel->setFile(null);
+
+        return $this;
+    }
+
+    private function hasClosure()
+    {
+        return null !== $this->finder->findFirst($this->statements, function (Node $node) {
+            return $node instanceof Node\Expr\Closure;
+        });
     }
 }
