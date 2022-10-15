@@ -9,6 +9,7 @@ use PHPUnit\Framework\TestCase;
 use SoureCode\PhpObjectModel\File\ClassFile;
 use SoureCode\PhpObjectModel\Model\ClassMethodModel;
 use SoureCode\PhpObjectModel\Model\ClassModel;
+use SoureCode\PhpObjectModel\Model\DeclareModel;
 use SoureCode\PhpObjectModel\Model\PropertyModel;
 use SoureCode\PhpObjectModel\Tests\Fixtures\AbstractBaseClassA;
 use SoureCode\PhpObjectModel\Tests\Fixtures\AbstractBaseClassB;
@@ -250,5 +251,22 @@ class ClassModelTest extends TestCase
         self::assertFalse($this->class->implementsInterface(ExampleAInterface::class));
         self::assertStringContainsString('implements ExampleBInterface' . PHP_EOL, $code);
         self::assertStringContainsString(sprintf('use %s;', ExampleBInterface::class), $code);
+    }
+
+    public function testGetSetHasDeclare(): void
+    {
+        $file = new ClassFile('<?php');
+
+        self::assertFalse($file->hasDeclare());
+
+        $model = new DeclareModel();
+
+        $file->setDeclare($model);
+
+        self::assertTrue($file->hasDeclare());
+
+        $declare = $file->getDeclare();
+
+        self::assertSame($model->getNode(), $declare->getNode());
     }
 }

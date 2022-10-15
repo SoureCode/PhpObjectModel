@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace SoureCode\PhpObjectModel\Printer;
 
 use PhpParser\Node;
+use PhpParser\Node\Stmt;
 use PhpParser\PrettyPrinter\Standard;
 
 /**
@@ -83,5 +84,15 @@ final class PrettyPrinter extends Standard
         $val = parent::pExpr_MethodCall($node);
 
         return $val;
+    }
+
+    protected function pStmt_Declare(Stmt\Declare_ $node): string
+    {
+        /**
+         * @var string $code
+         */
+        $code = parent::pStmt_Declare($node);
+
+        return str_replace('declare (', 'declare(', $code);
     }
 }

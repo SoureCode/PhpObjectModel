@@ -23,3 +23,14 @@ Multiple uses in a single definition are not supported.
 
 use Foo, Bar;
 ```
+
+## Multiple declares
+
+Multiple declare definitions are not supported.
+
+```php
+<?php
+
+declare(ticks=4);
+declare(strict_types=1);
+```

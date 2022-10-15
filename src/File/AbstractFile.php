@@ -11,6 +11,7 @@ use PhpParser\NodeTraverser;
 use PhpParser\NodeVisitor;
 use PhpParser\Parser;
 use PhpParser\PrettyPrinterAbstract;
+use SoureCode\PhpObjectModel\Model\DeclareModel;
 use SoureCode\PhpObjectModel\Model\NamespaceModel;
 use SoureCode\PhpObjectModel\Model\UseModel;
 use SoureCode\PhpObjectModel\Node\NodeFinder;
@@ -386,6 +387,55 @@ abstract class AbstractFile
         $node->stmts = [...$statements];
 
         $this->statements = [...$this->statements, $node];
+
+        return $this;
+    }
+
+    public function getDeclare(): DeclareModel
+    {
+        /**
+         * @var Node\Stmt\Declare_|null $node
+         */
+        $node = $this->finder->findFirstInstanceOf($this->statements, Node\Stmt\Declare_::class);
+
+        if (null === $node) {
+            throw new \RuntimeException('No declare found');
+        }
+
+        $model = new DeclareModel($node);
+        $model->setFile($this);
+
+        return $model;
+    }
+
+    public function hasDeclare(): bool
+    {
+        $node = $this->finder->findFirstInstanceOf($this->statements, Node\Stmt\Declare_::class);
+
+        return null !== $node;
+    }
+
+    public function setDeclare(?DeclareModel $model): self
+    {
+        if (null === $model) {
+            if ($this->hasDeclare()) {
+                $declare = $this->getDeclare();
+
+                $this->statements = $this->manipulator->removeNode($this->statements, $declare->getNode());
+            }
+
+            return $this;
+        }
+
+        if ($this->hasDeclare()) {
+            $declare = $this->getDeclare();
+
+            $this->manipulator->replaceNode($this->statements, $declare->getNode(), $model->getNode());
+
+            return $this;
+        }
+
+        $this->statements = [$model->getNode(), ...$this->statements];
 
         return $this;
     }
