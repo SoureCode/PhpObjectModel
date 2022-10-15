@@ -6,6 +6,7 @@ namespace SoureCode\PhpObjectModel\Model;
 
 use PhpParser\Node;
 use PhpParser\Node\Stmt\Class_;
+use SoureCode\PhpObjectModel\Traits\Attributes;
 use SoureCode\PhpObjectModel\Type\AbstractType;
 
 /**
@@ -13,10 +14,7 @@ use SoureCode\PhpObjectModel\Type\AbstractType;
  */
 class PropertyModel extends AbstractModel
 {
-    /**
-     * @psalm-var Node\Stmt\Property
-     */
-    protected Node $node;
+    use Attributes;
 
     public function __construct(Node\Stmt\Property|string $nodeOrName, ?AbstractType $type = null)
     {

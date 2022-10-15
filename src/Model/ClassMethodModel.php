@@ -5,12 +5,15 @@ declare(strict_types=1);
 namespace SoureCode\PhpObjectModel\Model;
 
 use PhpParser\Node;
+use SoureCode\PhpObjectModel\Traits\Attributes;
 
 /**
  * @extends AbstractFunctionLikeModel<Node\Stmt\ClassMethod>
  */
 class ClassMethodModel extends AbstractFunctionLikeModel
 {
+    use Attributes;
+
     public function __construct(Node\Stmt\ClassMethod|string $nodeOrName)
     {
         if (is_string($nodeOrName)) {
