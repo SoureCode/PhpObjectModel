@@ -16,7 +16,7 @@ class PropertyModel extends AbstractModel
 {
     use Attributes;
 
-    public function __construct(Node\Stmt\Property|string $nodeOrName, ?AbstractType $type = null)
+    public function __construct(Node\Stmt\Property|string $nodeOrName, AbstractType|string|null $type = null)
     {
         if (is_string($nodeOrName)) {
             $node = new Node\Stmt\Property(Class_::MODIFIER_PRIVATE, [
@@ -47,11 +47,12 @@ class PropertyModel extends AbstractModel
         return AbstractType::fromNode($this->node->type);
     }
 
-    public function setType(?AbstractType $type): self
+    public function setType(AbstractType|string|null $type): self
     {
         if (null === $type) {
             $this->node->type = null;
         } else {
+            $type = is_string($type) ? AbstractType::fromString($type) : $type;
             $node = $this->file?->resolveType($type) ?? $type->getNode();
 
             $this->node->type = $node;

@@ -108,6 +108,69 @@ abstract class AbstractType
         return $type;
     }
 
+    public static function fromString(string $typeString): self
+    {
+        if (str_contains($typeString, '|')) {
+            $types = explode('|', $typeString);
+            $nullable = false;
+            $typeNodes = [];
+
+            foreach ($types as $type) {
+                if ('null' === $type) {
+                    $nullable = true;
+                    continue;
+                }
+
+                $typeNode = self::fromString($type);
+
+                if ($typeNode instanceof PrimitiveType || $typeNode instanceof ResourceType || $typeNode instanceof ClassType) {
+                    $typeNodes[] = $typeNode;
+                } else {
+                    throw new RuntimeException('Union type can only contain primitive, resource or class types.');
+                }
+            }
+
+            $type = new UnionType($typeNodes);
+            $type->setNullable($nullable);
+
+            return $type;
+        }
+
+        if (str_contains($typeString, '&')) {
+            $types = explode('&', $typeString);
+            $typeNodes = [];
+
+            foreach ($types as $type) {
+                $typeNode = self::fromString($type);
+
+                if (!($typeNode instanceof ClassType)) {
+                    throw new RuntimeException('Intersection type can only contain class types.');
+                }
+
+                $typeNodes[] = $typeNode;
+            }
+
+            return new IntersectionType($typeNodes);
+        }
+
+        $nullable = false;
+
+        if (str_starts_with($typeString, '?')) {
+            $nullable = true;
+            $typeString = substr($typeString, 1);
+        }
+
+        $type = self::resolveType($typeString);
+
+        if (null === $type) {
+            $type = new ClassType(ClassName::fromString($typeString));
+        }
+
+        $type->setNullable($nullable);
+
+        return $type;
+    }
+
     private static function resolveType(string $name): ?AbstractType
     {
         return match ($name) {

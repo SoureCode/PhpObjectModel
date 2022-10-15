@@ -132,21 +132,27 @@ abstract class AbstractFile
         }, $nodes);
     }
 
-    public function addUse(AbstractNamespaceName $namespace, string $alias = null): UseModel
+    public function addUse(UseModel|string|AbstractNamespaceName $model, string $alias = null): UseModel
     {
-        if ($this->hasUse($namespace)) {
-            throw new LogicException('Use statement already exists.');
-        }
-
         if ($alias && $this->hasUse($alias)) {
             throw new LogicException('Use statement alias already exists.');
         }
 
-        $node = new Node\Stmt\Use_([
-            new Node\Stmt\UseUse($namespace->toFqcnNode(), $alias),
-        ]);
+        if (is_string($model)) {
+            $model = new NamespaceName($model);
+        }
 
-        $model = new UseModel($node);
+        if ($model instanceof AbstractNamespaceName) {
+            $model = new UseModel($model, $alias);
+        }
+
+        $namespace = $model->getNamespace();
+
+        if ($this->hasUse($namespace)) {
+            throw new LogicException('Use statement already exists.');
+        }
+
+        $node = $model->getNode();
 
         $targetNode = $this->finder->findLastInstanceOf($this->statements, Node\Stmt\Use_::class);
 
@@ -180,9 +186,11 @@ abstract class AbstractFile
         return $model;
     }
 
-    public function hasUse(string|AbstractNamespaceName $namespace): bool
+    public function hasUse(string|AbstractNamespaceName|UseModel $namespace): bool
     {
+        $namespace = $namespace instanceof UseModel ? $namespace->getNamespace() : $namespace;
         $namespace = is_string($namespace) ? new NamespaceName($namespace) : $namespace;
+
         $uses = $this->getUses();
 
         foreach ($uses as $use) {
@@ -370,8 +378,11 @@ abstract class AbstractFile
         return $model;
     }
 
-    public function setNamespace(NamespaceModel $model): self
+    public function setNamespace(string|NamespaceName|NamespaceModel $model): self
     {
+        $model = is_string($model) ? new NamespaceName($model) : $model;
+        $model = $model instanceof NamespaceName ? new NamespaceModel($model) : $model;
+
         if ($this->hasNamespace()) {
             $namespace = $this->getNamespace();
 

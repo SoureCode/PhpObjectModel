@@ -21,12 +21,16 @@ abstract class AbstractFunctionLikeModel extends AbstractModel
         return $this->node->returnType ? AbstractType::fromNode($this->node->returnType) : null;
     }
 
-    public function setReturnType(?AbstractType $returnType): self
+    public function setReturnType(AbstractType|string|null $returnType): self
     {
         if (null === $returnType) {
             $this->node->returnType = null;
 
             return $this;
+        }
+
+        if (is_string($returnType)) {
+            $returnType = AbstractType::fromString($returnType);
         }
 
         $node = $this->file?->resolveType($returnType);
@@ -38,7 +42,7 @@ abstract class AbstractFunctionLikeModel extends AbstractModel
     /**
      * @return array<ParameterModel>
      */
-    public function getParams(): array
+    public function getParameters(): array
     {
         return array_map(function (Node\Param $param) {
             $model = new ParameterModel($param);
@@ -51,19 +55,21 @@ abstract class AbstractFunctionLikeModel extends AbstractModel
     /**
      * @psalm-param array<ParameterModel> $params
      */
-    public function setParams(array $params): self
+    public function setParameters(array $params): self
     {
         $this->node->params = [];
 
         foreach ($params as $param) {
-            $this->addParam($param);
+            $this->addParameter($param);
         }
 
         return $this;
     }
 
-    public function hasParam(string $name): bool
+    public function hasParameter(string|ParameterModel $name): bool
     {
+        $name = $name instanceof ParameterModel ? $name->getName() : $name;
+
         /**
          * @var Node\Param|null $node
          */
@@ -78,7 +84,7 @@ abstract class AbstractFunctionLikeModel extends AbstractModel
         return null !== $node;
     }
 
-    public function getParam(string $name): ParameterModel
+    public function getParameter(string $name): ParameterModel
     {
         /**
          * @var Node\Param|null $node
@@ -104,8 +110,10 @@ abstract class AbstractFunctionLikeModel extends AbstractModel
         return $model;
     }
 
-    public function addParam(ParameterModel $param): self
+    public function addParameter(ParameterModel|string $param, AbstractType|string|null $type = null): self
     {
+        $param = is_string($param) ? new ParameterModel($param, $type) : $param;
+
         $this->node->params = [
             ...$this->node->params,
             $param->getNode(),
@@ -128,9 +136,9 @@ abstract class AbstractFunctionLikeModel extends AbstractModel
         return $this;
     }
 
-    public function removeParam(string $name): self
+    public function removeParameter(string|ParameterModel $name): self
     {
-        $param = $this->getParam($name);
+        $param = is_string($name) ? $this->getParameter($name) : $name;
 
         $this->manipulator->removeNode($this->node, $param->getNode());
 

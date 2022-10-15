@@ -7,6 +7,7 @@ namespace SoureCode\PhpObjectModel\File;
 use Exception;
 use PhpParser\Node;
 use SoureCode\PhpObjectModel\Model\ClassModel;
+use SoureCode\PhpObjectModel\ValueObject\ClassName;
 
 class ClassFile extends AbstractFile
 {
@@ -36,8 +37,16 @@ class ClassFile extends AbstractFile
         return $model;
     }
 
-    public function setClass(ClassModel $class): self
+    public function setClass(ClassModel|string|ClassName $class): self
     {
+        $class = is_string($class) ? new ClassName($class) : $class;
+
+        if ($class instanceof ClassName) {
+            $namespace = $class->getNamespace();
+            $class = new ClassModel($class);
+            $this->setNamespace($namespace);
+        }
+
         if ($this->hasClass()) {
             $oldClass = $this->getClass();
 

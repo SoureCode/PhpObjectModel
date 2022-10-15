@@ -32,6 +32,15 @@ class ClassName extends AbstractNamespaceName
         return new self($nameOrParts);
     }
 
+    public function getNamespace(): NamespaceName
+    {
+        $parts = $this->getParts();
+
+        array_pop($parts);
+
+        return new NamespaceName($parts);
+    }
+
     public function toClassConstFetchNode(): Node\Expr\ClassConstFetch
     {
         return new Node\Expr\ClassConstFetch($this->toNode(), 'class');

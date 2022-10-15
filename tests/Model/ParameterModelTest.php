@@ -21,7 +21,7 @@ class ParameterModelTest extends TestCase
         $closure = new ClosureModel();
         $file->setClosure($closure);
 
-        $closure->addParam(
+        $closure->addParameter(
             (new ParameterModel('foo'))
                 ->setType(new ClassType(ClassName::class))
         );
@@ -73,7 +73,7 @@ class ParameterModelTest extends TestCase
         $closure = new ClosureModel();
         $file->setClosure($closure);
 
-        $closure->addParam(
+        $closure->addParameter(
             (new ParameterModel('foo'))
                 ->setType(new StringType())
                 ->setDefault(new Node\Scalar\String_('bar'))

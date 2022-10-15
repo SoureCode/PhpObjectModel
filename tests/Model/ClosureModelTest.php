@@ -83,32 +83,32 @@ class ClosureModelTest extends TestCase
 
     public function testGetSetAddRemoveParams(): void
     {
-        self::assertCount(2, $this->closure->getParams());
-        self::assertSame(ExampleBInterface::class, $this->closure->getParam('a')->getType()->getClassName()->getName());
-        self::assertSame(ExampleAInterface::class, $this->closure->getParam('b')->getType()->getClassName()->getName());
+        self::assertCount(2, $this->closure->getParameters());
+        self::assertSame(ExampleBInterface::class, $this->closure->getParameter('a')->getType()->getClassName()->getName());
+        self::assertSame(ExampleAInterface::class, $this->closure->getParameter('b')->getType()->getClassName()->getName());
 
-        self::assertTrue($this->closure->hasParam('a'));
-        self::assertTrue($this->closure->hasParam('b'));
-        self::assertFalse($this->closure->hasParam('foo'));
-        self::assertFalse($this->closure->hasParam('bar'));
-        self::assertFalse($this->closure->hasParam('baz'));
+        self::assertTrue($this->closure->hasParameter('a'));
+        self::assertTrue($this->closure->hasParameter('b'));
+        self::assertFalse($this->closure->hasParameter('foo'));
+        self::assertFalse($this->closure->hasParameter('bar'));
+        self::assertFalse($this->closure->hasParameter('baz'));
 
-        $this->closure->setParams([
+        $this->closure->setParameters([
             new ParameterModel('foo'),
             new ParameterModel('dolor'),
             new ParameterModel('bar'),
         ]);
 
-        $this->closure->addParam(new ParameterModel('baz'));
+        $this->closure->addParameter(new ParameterModel('baz'));
 
-        self::assertTrue($this->closure->hasParam('foo'));
-        self::assertTrue($this->closure->hasParam('bar'));
-        self::assertTrue($this->closure->hasParam('baz'));
-        self::assertTrue($this->closure->hasParam('dolor'));
-        self::assertFalse($this->closure->hasParam('ab'));
-        self::assertFalse($this->closure->hasParam('b'));
+        self::assertTrue($this->closure->hasParameter('foo'));
+        self::assertTrue($this->closure->hasParameter('bar'));
+        self::assertTrue($this->closure->hasParameter('baz'));
+        self::assertTrue($this->closure->hasParameter('dolor'));
+        self::assertFalse($this->closure->hasParameter('ab'));
+        self::assertFalse($this->closure->hasParameter('b'));
 
-        $this->closure->removeParam('dolor');
+        $this->closure->removeParameter('dolor');
 
         $code = $this->file->getSourceCode();
 

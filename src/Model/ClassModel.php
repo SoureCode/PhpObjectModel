@@ -6,6 +6,7 @@ namespace SoureCode\PhpObjectModel\Model;
 
 use InvalidArgumentException;
 use PhpParser\Node;
+use SoureCode\PhpObjectModel\File\ClassFile;
 use SoureCode\PhpObjectModel\Node\NodeManipulator;
 use SoureCode\PhpObjectModel\Traits\Attributes;
 use SoureCode\PhpObjectModel\Type\AbstractType;
@@ -18,15 +19,17 @@ class ClassModel extends AbstractClassLikeModel
 {
     use Attributes;
 
-    public function __construct(Node\Stmt\Class_|string $nodeOrName)
+    public function __construct(Node\Stmt\Class_|string|ClassName $nodeOrName)
     {
         if (is_string($nodeOrName)) {
-            $node = new Node\Stmt\Class_($nodeOrName);
-        } else {
-            $node = $nodeOrName;
+            $nodeOrName = new ClassName($nodeOrName);
         }
 
-        parent::__construct($node);
+        if ($nodeOrName instanceof ClassName) {
+            $nodeOrName = new Node\Stmt\Class_($nodeOrName->getShortName());
+        }
+
+        parent::__construct($nodeOrName);
     }
 
     /**
@@ -50,8 +53,12 @@ class ClassModel extends AbstractClassLikeModel
         );
     }
 
-    public function hasProperty(string $name): bool
+    public function hasProperty(string|PropertyModel $name): bool
     {
+        if ($name instanceof PropertyModel) {
+            $name = $name->getName();
+        }
+
         $node = $this->finder->findFirst($this->node, function (Node $node) use ($name) {
             return $node instanceof Node\Stmt\Property && $node->props[0]->name->name === $name;
         });
@@ -78,13 +85,14 @@ class ClassModel extends AbstractClassLikeModel
         return $model;
     }
 
-    /**
-     * If the property already exists, it will be overwritten.
-     */
-    public function addProperty(PropertyModel $property): self
+    public function addProperty(PropertyModel|string $property, AbstractType|string|null $type = null): self
     {
+        if (is_string($property)) {
+            $property = new PropertyModel($property, $type);
+        }
+
         if ($this->hasProperty($property->getName())) {
-            $this->removeProperty($property->getName());
+            throw new InvalidArgumentException(sprintf('Property "%s" already exists.', $property->getName()));
         }
 
         $node = $property->getNode();
@@ -127,8 +135,9 @@ class ClassModel extends AbstractClassLikeModel
         return $this;
     }
 
-    public function removeProperty(string $name): self
+    public function removeProperty(string|PropertyModel $name): self
     {
+        $name = $name instanceof PropertyModel ? $name->getName() : $name;
         $property = $this->getProperty($name);
 
         $this->manipulator->removeNode($this->node, $property->getNode());
@@ -154,8 +163,9 @@ class ClassModel extends AbstractClassLikeModel
         }, $nodes);
     }
 
-    public function hasMethod(string $name): bool
+    public function hasMethod(string|ClassMethodModel $name): bool
     {
+        $name = $name instanceof ClassMethodModel ? $name->getName() : $name;
         $node = $this->finder->findFirst($this->node, function (Node $node) use ($name) {
             return $node instanceof Node\Stmt\ClassMethod && $node->name->name === $name;
         });
@@ -182,13 +192,14 @@ class ClassModel extends AbstractClassLikeModel
         return $model;
     }
 
-    /**
-     * If the method already exists, it will be overwritten.
-     */
-    public function addMethod(ClassMethodModel $model): self
+    public function addMethod(ClassMethodModel|string $model): self
     {
+        if (is_string($model)) {
+            $model = new ClassMethodModel($model);
+        }
+
         if ($this->hasMethod($model->getName())) {
-            $this->removeMethod($model->getName());
+            throw new InvalidArgumentException(sprintf('Method "%s" already exists.', $model->getName()));
         }
 
         $node = $model->getNode();
@@ -221,8 +232,9 @@ class ClassModel extends AbstractClassLikeModel
         return $this;
     }
 
-    public function removeMethod(string $name): self
+    public function removeMethod(string|ClassMethodModel $name): self
     {
+        $name = $name instanceof ClassMethodModel ? $name->getName() : $name;
         $method = $this->getMethod($name);
         $this->manipulator->removeNode($this->node, $method->getNode());
 
@@ -282,8 +294,10 @@ class ClassModel extends AbstractClassLikeModel
     /**
      * @psalm-param class-string $name
      */
-    public function removeInterface(string $name): self
+    public function removeInterface(string|ClassName $name): self
     {
+        $name = $name instanceof ClassName ? $name->getName() : $name;
+
         $this->node->implements = array_filter($this->node->implements, static function (Node\Name $node) use ($name) {
             return NodeManipulator::resolveName($node) !== $name;
         });
@@ -325,26 +339,21 @@ class ClassModel extends AbstractClassLikeModel
             return null;
         }
 
-        // returns the FQCN
-        if ($parent->hasAttribute('resolvedName')) {
-            /**
-             * @var Node\Name\FullyQualified|null $attr
-             */
-            $attr = $parent->getAttribute('resolvedName');
-
-            if ($attr) {
-                return $attr->toString();
-            }
-        }
-
-        return $parent->toString();
+        return ClassName::fromNode($parent)->getName();
     }
 
     /**
-     * @psalm-param ClassName|class-string $className
+     * @psalm-param ClassName|class-string|ClassFile $className
      */
-    public function extend(ClassName|string $className): self
+    public function extend(ClassName|string|ClassFile $className): self
     {
+        if ($className instanceof ClassFile) {
+            $namespace = $className->getNamespace()->getName();
+            $class = $className->getClass();
+
+            $className = $namespace->class($class->getName());
+        }
+
         $className = is_string($className) ? new ClassName($className) : $className;
         $node = $this->file?->resolveUseName($className) ?? $className->toNode();
 

@@ -159,19 +159,19 @@ class ClassModelTest extends TestCase
         self::assertFalse($actual->isReadonly());
         self::assertStringContainsString("private static string \$staticProperty = 'foo1';", $code);
 
-        $this->class->addProperty(new PropertyModel('staticProperty', new ClassType(ClassName::class)));
+        $this->class->addProperty(new PropertyModel('staticProperty7', new ClassType(ClassName::class)));
 
-        $actual = $this->class->getProperty('staticProperty');
+        $actual = $this->class->getProperty('staticProperty7');
         $code = $this->file->getSourceCode();
 
-        self::assertSame('staticProperty', $actual->getName());
+        self::assertSame('staticProperty7', $actual->getName());
         self::assertFalse($actual->isStatic());
         self::assertFalse($actual->isPublic());
         self::assertFalse($actual->isProtected());
         self::assertTrue($actual->isPrivate());
         self::assertFalse($actual->isAbstract());
         self::assertFalse($actual->isReadonly());
-        self::assertStringContainsString('private ClassName $staticProperty;', $code);
+        self::assertStringContainsString('private ClassName $staticProperty7;', $code);
     }
 
     public function testGetProperties(): void
@@ -192,7 +192,7 @@ class ClassModelTest extends TestCase
         self::assertFalse($actual->isPrivate());
         self::assertFalse($actual->isAbstract());
 
-        $actual = new ClassMethodModel('baz');
+        $actual = new ClassMethodModel('bazer');
         $actual->setPrivate();
         $actual->addStatement(new Node\Stmt\Return_(new Node\Scalar\String_('foo')));
         $actual->setReturnType(new ClassType(ClassType::class));
@@ -201,21 +201,21 @@ class ClassModelTest extends TestCase
 
         $code = $this->file->getSourceCode();
 
-        self::assertSame('baz', $actual->getName());
+        self::assertSame('bazer', $actual->getName());
         self::assertFalse($actual->isStatic());
         self::assertFalse($actual->isPublic());
         self::assertFalse($actual->isProtected());
         self::assertTrue($actual->isPrivate());
         self::assertFalse($actual->isAbstract());
-        self::assertStringNotContainsString('public function baz(string $foo, int $bar): string', $code);
-        self::assertStringContainsString('private function baz(): ClassType', $code);
+        self::assertStringNotContainsString('public function bazer(string $foo, int $bar): string', $code);
+        self::assertStringContainsString('private function bazer(): ClassType', $code);
         self::assertStringContainsString(sprintf('use %s;', ClassType::class), $code);
         self::assertStringContainsString('return \'foo\';', $code);
-        self::assertTrue($this->class->hasMethod('baz'));
+        self::assertTrue($this->class->hasMethod('bazer'));
 
-        $this->class->removeMethod('baz');
+        $this->class->removeMethod('bazer');
 
-        self::assertFalse($this->class->hasMethod('baz'));
+        self::assertFalse($this->class->hasMethod('bazer'));
     }
 
     public function testImplementsRemoveImplementInterface(): void

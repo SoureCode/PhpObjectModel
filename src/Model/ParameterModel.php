@@ -13,13 +13,17 @@ use SoureCode\PhpObjectModel\Type\AbstractType;
  */
 class ParameterModel extends AbstractModel
 {
-    public function __construct(Node\Param|string $node)
+    public function __construct(Node\Param|string $node, AbstractType|string|null $type = null)
     {
         if (is_string($node)) {
             $node = new Node\Param(new Node\Expr\Variable($node));
         }
 
         parent::__construct($node);
+
+        if (null !== $type) {
+            $this->setType($type);
+        }
     }
 
     public function hasType(): bool
@@ -36,12 +40,16 @@ class ParameterModel extends AbstractModel
         return AbstractType::fromNode($this->node->type);
     }
 
-    public function setType(?AbstractType $type): self
+    public function setType(AbstractType|null|string $type): self
     {
         if (null === $type) {
             $this->node->type = null;
 
             return $this;
+        }
+
+        if (is_string($type)) {
+            $type = AbstractType::fromString($type);
         }
 
         $node = $type->getNode();

@@ -24,8 +24,12 @@ trait Attributes
         }, $this->node->attrGroups);
     }
 
-    public function hasAttribute(string|ClassName $name): bool
+    public function hasAttribute(string|ClassName|AttributeModel $name): bool
     {
+        if ($name instanceof AttributeModel) {
+            $name = $name->getName();
+        }
+
         $name = is_string($name) ? new ClassName($name) : $name;
 
         foreach ($this->node->attrGroups as $node) {
@@ -72,8 +76,12 @@ trait Attributes
         return $this;
     }
 
-    public function addAttribute(AttributeModel $model): self
+    public function addAttribute(AttributeModel|string|ClassName $model): self
     {
+        if (is_string($model) || $model instanceof ClassName) {
+            $model = new AttributeModel($model);
+        }
+
         if ($this->hasAttribute($model->getName())) {
             throw new InvalidArgumentException(sprintf('Attribute "%s" already exists', $model->getName()->getName()));
         }
