@@ -17,8 +17,14 @@ class ClassMethodModel extends AbstractFunctionLikeModel
     public function __construct(Node\Stmt\ClassMethod|string $nodeOrName)
     {
         if (is_string($nodeOrName)) {
+            $returnType = new Node\Identifier('void');
+
+            if ('__construct' === $nodeOrName) {
+                $returnType = null;
+            }
+
             $node = new Node\Stmt\ClassMethod($nodeOrName, [
-                'returnType' => new Node\Identifier('void'),
+                'returnType' => $returnType,
             ]);
         } else {
             $node = $nodeOrName;
@@ -64,6 +70,24 @@ class ClassMethodModel extends AbstractFunctionLikeModel
         $this->node->flags |= Node\Stmt\Class_::MODIFIER_PRIVATE;
         $this->node->flags &= ~Node\Stmt\Class_::MODIFIER_PROTECTED;
         $this->node->flags &= ~Node\Stmt\Class_::MODIFIER_PUBLIC;
+
+        return $this;
+    }
+
+    public function setPublic(): self
+    {
+        $this->node->flags |= Node\Stmt\Class_::MODIFIER_PUBLIC;
+        $this->node->flags &= ~Node\Stmt\Class_::MODIFIER_PROTECTED;
+        $this->node->flags &= ~Node\Stmt\Class_::MODIFIER_PRIVATE;
+
+        return $this;
+    }
+
+    public function setProtected(): self
+    {
+        $this->node->flags |= Node\Stmt\Class_::MODIFIER_PROTECTED;
+        $this->node->flags &= ~Node\Stmt\Class_::MODIFIER_PUBLIC;
+        $this->node->flags &= ~Node\Stmt\Class_::MODIFIER_PRIVATE;
 
         return $this;
     }

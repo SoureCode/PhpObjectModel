@@ -6,6 +6,7 @@ namespace SoureCode\PhpObjectModel\Model;
 
 use LogicException;
 use PhpParser\Node;
+use SoureCode\PhpObjectModel\Traits\Arguments;
 use SoureCode\PhpObjectModel\ValueObject\ClassName;
 
 /**
@@ -13,7 +14,9 @@ use SoureCode\PhpObjectModel\ValueObject\ClassName;
  */
 class AttributeModel extends AbstractModel
 {
-    private Node\Attribute $attributeNode;
+    use Arguments;
+
+    private Node\Attribute $argumentsNode;
 
     public function __construct(Node\AttributeGroup|Node\Name|string|ClassName $nodeOrName)
     {
@@ -37,29 +40,14 @@ class AttributeModel extends AbstractModel
             throw new LogicException('Attribute node is null.');
         }
 
-        $this->attributeNode = $attributeNode;
+        $this->argumentsNode = $attributeNode;
 
         parent::__construct($nodeOrName);
     }
 
     public function getName(): ClassName
     {
-        return ClassName::fromNode($this->attributeNode->name);
-    }
-
-    public function addArgument(Node\Arg $argument): self
-    {
-        $this->attributeNode->args = [...$this->attributeNode->args, $argument];
-
-        return $this;
-    }
-
-    /**
-     * @return Node\Arg[]
-     */
-    public function getArguments(): array
-    {
-        return $this->attributeNode->args;
+        return ClassName::fromNode($this->argumentsNode->name);
     }
 
     public function importTypes(): self
@@ -68,18 +56,8 @@ class AttributeModel extends AbstractModel
             $name = $this->getName();
             $name = $this->file->resolveUseName($name);
 
-            $this->attributeNode->name = $name;
+            $this->argumentsNode->name = $name;
         }
-
-        return $this;
-    }
-
-    /**
-     * @param Node\Arg[] $args
-     */
-    public function setArguments(array $args): self
-    {
-        $this->attributeNode->args = [...$args];
 
         return $this;
     }

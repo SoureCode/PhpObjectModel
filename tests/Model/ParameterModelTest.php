@@ -11,6 +11,7 @@ use SoureCode\PhpObjectModel\Model\ClosureModel;
 use SoureCode\PhpObjectModel\Model\ParameterModel;
 use SoureCode\PhpObjectModel\Type\ClassType;
 use SoureCode\PhpObjectModel\Type\StringType;
+use SoureCode\PhpObjectModel\Value\StringValue;
 use SoureCode\PhpObjectModel\ValueObject\ClassName;
 
 class ParameterModelTest extends TestCase
@@ -64,7 +65,9 @@ class ParameterModelTest extends TestCase
 
         $parameter->setDefault(new Node\Scalar\String_('bar'));
 
-        self::assertSame('bar', $parameter->getDefault()->value);
+        $value = $parameter->getDefault();
+
+        self::assertInstanceOf(StringValue::class, $value);
     }
 
     public function testGeneratedCode(): void

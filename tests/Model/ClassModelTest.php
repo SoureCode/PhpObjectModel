@@ -7,6 +7,7 @@ namespace SoureCode\PhpObjectModel\Tests\Model;
 use PhpParser\Node;
 use PHPUnit\Framework\TestCase;
 use SoureCode\PhpObjectModel\File\ClassFile;
+use SoureCode\PhpObjectModel\Model\ArgumentModel;
 use SoureCode\PhpObjectModel\Model\AttributeModel;
 use SoureCode\PhpObjectModel\Model\ClassMethodModel;
 use SoureCode\PhpObjectModel\Model\ClassModel;
@@ -296,12 +297,12 @@ HEREDOC
         $class->addAttribute(
             (new AttributeModel('Doctrine\\ORM\\Mapping\\Table'))
                 ->setArguments([
-                    new Node\Arg(new Node\Scalar\String_('foo')),
+                    new ArgumentModel(new Node\Arg(new Node\Scalar\String_('foo'))),
                 ])
         );
 
         $class->getAttribute('Doctrine\\ORM\\Mapping\\Entity')
-            ->addArgument(new Node\Arg(new Node\Scalar\String_('bar')));
+            ->setArgument(new Node\Arg(new Node\Scalar\String_('bar')));
 
         self::assertTrue($class->hasAttribute('Doctrine\\ORM\\Mapping\\Table'));
         self::assertTrue($class->hasAttribute('Doctrine\\ORM\\Mapping\\Entity'));

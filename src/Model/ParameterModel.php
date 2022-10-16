@@ -7,6 +7,7 @@ namespace SoureCode\PhpObjectModel\Model;
 use PhpParser\Node;
 use RuntimeException;
 use SoureCode\PhpObjectModel\Type\AbstractType;
+use SoureCode\PhpObjectModel\Value\AbstractValue;
 
 /**
  * @extends AbstractModel<Node\Param>
@@ -87,9 +88,11 @@ class ParameterModel extends AbstractModel
         throw new RuntimeException('Could not get name of parameter.');
     }
 
-    public function setDefault(?Node\Expr $default): self
+    public function setDefault(Node\Expr|AbstractValue|null $default): self
     {
-        // @todo create a value model for all the types
+        if ($default instanceof AbstractValue) {
+            $default = $default->getNode();
+        }
 
         if (null === $default) {
             $this->node->default = null;
@@ -102,8 +105,12 @@ class ParameterModel extends AbstractModel
         return $this;
     }
 
-    public function getDefault(): ?Node\Expr
+    public function getDefault(): ?AbstractValue
     {
-        return $this->node->default;
+        if (null === $this->node->default) {
+            return null;
+        }
+
+        return AbstractValue::fromNode($this->node->default);
     }
 }

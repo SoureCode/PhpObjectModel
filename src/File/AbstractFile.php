@@ -232,6 +232,18 @@ abstract class AbstractFile
             }
         }
 
+        foreach ($directUses as $model) {
+            $namespace = $model->getNamespace();
+            $commonNamespace = $namespace->getLongestCommonNamespace($class);
+
+            if ($commonNamespace && $commonNamespace->length() === $namespace->length()) {
+                $relative = $commonNamespace->getNamespaceRelativeTo($class);
+                $lastPart = $namespace->getShortName();
+
+                return NamespaceName::fromString($lastPart . '\\' . $relative->getName());
+            }
+        }
+
         return null;
     }
 
