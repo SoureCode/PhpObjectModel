@@ -7,6 +7,8 @@ namespace SoureCode\PhpObjectModel\Node;
 use PhpParser\Node;
 use PhpParser\NodeTraverser;
 use RuntimeException;
+use SoureCode\PhpObjectModel\Model\UseModel;
+use SoureCode\PhpObjectModel\Node\Visitor\AddUseVisitor;
 use SoureCode\PhpObjectModel\Node\Visitor\InsertAfterVisitor;
 use SoureCode\PhpObjectModel\Node\Visitor\RemoveNodeVisitor;
 use SoureCode\PhpObjectModel\Node\Visitor\ReplaceNodeVisitor;
@@ -14,9 +16,11 @@ use SoureCode\PhpObjectModel\Node\Visitor\ReplaceNodeVisitor;
 class NodeManipulator
 {
     /**
-     * @psalm-param Node|Node[] $nodes
+     * @param Node|Node[] $nodes
+     *
+     * @return Node[]
      */
-    public function replaceNode(Node|array $nodes, Node $oldNode, Node $newNode): void
+    public function replaceNode(Node|array $nodes, Node $oldNode, Node $newNode): array
     {
         if (!is_array($nodes)) {
             $nodes = [$nodes];
@@ -25,7 +29,7 @@ class NodeManipulator
         $traverser = new NodeTraverser();
         $traverser->addVisitor(new ReplaceNodeVisitor($oldNode, $newNode));
 
-        $traverser->traverse($nodes);
+        return $traverser->traverse($nodes);
     }
 
     /**
@@ -95,5 +99,22 @@ class NodeManipulator
         }
 
         throw new RuntimeException('Could not resolve argument.');
+    }
+
+    /**
+     * @param Node|Node[] $nodes
+     *
+     * @return Node[]
+     */
+    public function addUse(Node|array $nodes, UseModel $model): array
+    {
+        if (!is_array($nodes)) {
+            $nodes = [$nodes];
+        }
+
+        $traverser = new NodeTraverser();
+        $traverser->addVisitor(new AddUseVisitor($model));
+
+        return $traverser->traverse($nodes);
     }
 }

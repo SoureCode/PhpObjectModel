@@ -51,14 +51,12 @@ class ClassFile extends AbstractFile
             $oldClass = $this->getClass();
 
             $this->manipulator->replaceNode($this->statements, $oldClass->getNode(), $class->getNode());
-            $class->setFile($this);
             $oldClass->setFile(null);
-
-            return $this;
+        } else {
+            $this->statements = [...$this->statements, $class->getNode()];
         }
 
         $class->setFile($this);
-        $this->statements = [...$this->statements, $class->getNode()];
 
         return $this;
     }

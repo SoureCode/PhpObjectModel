@@ -62,6 +62,18 @@ class AttributeModel extends AbstractModel
         return $this->attributeNode->args;
     }
 
+    public function importTypes(): self
+    {
+        if ($this->file) {
+            $name = $this->getName();
+            $name = $this->file->resolveUseName($name);
+
+            $this->attributeNode->name = $name;
+        }
+
+        return $this;
+    }
+
     /**
      * @param Node\Arg[] $args
      */

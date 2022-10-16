@@ -33,8 +33,9 @@ abstract class AbstractFunctionLikeModel extends AbstractModel
             $returnType = AbstractType::fromString($returnType);
         }
 
-        $node = $this->file?->resolveType($returnType);
-        $this->node->returnType = $node ?? $returnType->getNode();
+        $this->node->returnType = $returnType->getNode();
+
+        $this->importTypes();
 
         return $this;
     }
@@ -113,25 +114,14 @@ abstract class AbstractFunctionLikeModel extends AbstractModel
     public function addParameter(ParameterModel|string $param, AbstractType|string|null $type = null): self
     {
         $param = is_string($param) ? new ParameterModel($param, $type) : $param;
+        $param->setFile($this->file);
 
         $this->node->params = [
             ...$this->node->params,
             $param->getNode(),
         ];
 
-        $param->setFile($this->file);
-
-        if (null !== $this->file) {
-            $type = $param->getType();
-
-            if (null !== $type) {
-                $name = $this->file->resolveType($type);
-
-                if (null !== $name) {
-                    $param->setType(AbstractType::fromNode($name));
-                }
-            }
-        }
+        $param->importTypes();
 
         return $this;
     }
@@ -191,6 +181,24 @@ abstract class AbstractFunctionLikeModel extends AbstractModel
     public function removeStatement(Node $node): self
     {
         $this->manipulator->removeNode($this->node, $node);
+
+        return $this;
+    }
+
+    public function importTypes(): self
+    {
+        // return type
+        if ($this->file && null !== $this->node->returnType) {
+            $type = $this->node->returnType;
+            $this->node->returnType = $this->file->resolveType(
+                AbstractType::fromNode($this->node->returnType)
+            ) ?? $type;
+        }
+
+        // parameters
+        foreach ($this->getParameters() as $parameter) {
+            $parameter->importTypes();
+        }
 
         return $this;
     }

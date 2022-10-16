@@ -53,9 +53,19 @@ class PropertyModel extends AbstractModel
             $this->node->type = null;
         } else {
             $type = is_string($type) ? AbstractType::fromString($type) : $type;
-            $node = $this->file?->resolveType($type) ?? $type->getNode();
+            $this->node->type = $type->getNode();
 
-            $this->node->type = $node;
+            $this->importTypes();
+        }
+
+        return $this;
+    }
+
+    public function importTypes(): self
+    {
+        if ($this->file && null !== $this->node->type) {
+            $type = $this->node->type;
+            $this->node->type = $this->file->resolveType(AbstractType::fromNode($type)) ?? $type;
         }
 
         return $this;

@@ -76,29 +76,21 @@ trait Attributes
         return $this;
     }
 
-    public function addAttribute(AttributeModel|string|ClassName $model): self
+    public function addAttribute(AttributeModel|string|ClassName $attribute): self
     {
-        if (is_string($model) || $model instanceof ClassName) {
-            $model = new AttributeModel($model);
+        if (is_string($attribute) || $attribute instanceof ClassName) {
+            $attribute = new AttributeModel($attribute);
         }
 
-        if ($this->hasAttribute($model->getName())) {
-            throw new InvalidArgumentException(sprintf('Attribute "%s" already exists', $model->getName()->getName()));
+        if ($this->hasAttribute($attribute->getName())) {
+            $name = $attribute->getName();
+            throw new InvalidArgumentException(sprintf('Attribute "%s" already exists', $name->getName()));
         }
 
-        if ($this->file) {
-            $className = $model->getName();
-            $name = $this->file->resolveUseName($className);
+        $this->node->attrGroups = [...$this->node->attrGroups, $attribute->getNode()];
 
-            $args = $model->getArguments();
-
-            $model = new AttributeModel($name);
-            $model->setArguments($args);
-        }
-
-        $model->setFile($this->file);
-
-        $this->node->attrGroups = [...$this->node->attrGroups, $model->getNode()];
+        $attribute->setFile($this->file);
+        $attribute->importTypes();
 
         return $this;
     }

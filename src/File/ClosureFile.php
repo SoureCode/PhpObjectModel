@@ -39,6 +39,7 @@ class ClosureFile extends AbstractFile
         $this->statements = [...$this->statements, new Node\Stmt\Return_(
             $model->getNode()
         )];
+
         $model->setFile($this);
 
         return $this;

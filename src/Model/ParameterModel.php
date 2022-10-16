@@ -52,13 +52,21 @@ class ParameterModel extends AbstractModel
             $type = AbstractType::fromString($type);
         }
 
-        $node = $type->getNode();
+        $this->node->type = $type->getNode();
 
-        if ($this->file) {
-            $node = $this->file->resolveType($type);
+        $this->importTypes();
+
+        return $this;
+    }
+
+    public function importTypes(): self
+    {
+        if ($this->file && $this->node->type) {
+            $type = $this->node->type;
+            $this->node->type = $this->file->resolveType(
+                AbstractType::fromNode($this->node->type)
+            ) ?? $type;
         }
-
-        $this->node->type = $node;
 
         return $this;
     }

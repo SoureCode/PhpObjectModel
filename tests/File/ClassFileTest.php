@@ -101,4 +101,23 @@ SOURCECODE
 
         self::assertStringContainsString('namespace Acme\\Foo;', $code);
     }
+
+    public function testImportTypes(): void
+    {
+        $file = new ClassFile();
+        $class = new ClassModel('Foo');
+
+        $file
+            ->setDeclare((new DeclareModel())->setStrictTypes(true))
+            ->setNamespace('Acme\\Foo')
+            ->addUse('Doctrine\\ORM\\Mapping', 'ORM');
+
+        $class->addAttribute('Doctrine\\ORM\\Mapping\\Entity');
+
+        $file->setClass($class);
+
+        $code = $file->getSourceCode();
+
+        self::assertStringContainsString('#[ORM\\Entity]', $code);
+    }
 }

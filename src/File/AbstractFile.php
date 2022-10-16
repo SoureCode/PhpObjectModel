@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace SoureCode\PhpObjectModel\File;
 
-use LogicException;
 use PhpParser\Lexer;
 use PhpParser\Node;
 use PhpParser\NodeTraverser;
@@ -134,54 +133,11 @@ abstract class AbstractFile
 
     public function addUse(UseModel|string|AbstractNamespaceName $model, string $alias = null): self
     {
-        if ($alias && $this->hasUse($alias)) {
-            throw new LogicException('Use statement alias already exists.');
-        }
-
-        if (is_string($model)) {
-            $model = new NamespaceName($model);
-        }
-
-        if ($model instanceof AbstractNamespaceName) {
+        if (is_string($model) || $model instanceof AbstractNamespaceName) {
             $model = new UseModel($model, $alias);
         }
 
-        $namespace = $model->getNamespace();
-
-        if ($this->hasUse($namespace)) {
-            throw new LogicException('Use statement already exists.');
-        }
-
-        $node = $model->getNode();
-
-        $targetNode = $this->finder->findLastInstanceOf($this->statements, Node\Stmt\Use_::class);
-
-        if ($targetNode) {
-            $this->statements = $this->manipulator->insertAfter($this->statements, $targetNode, $node);
-
-            return $this;
-        }
-
-        /**
-         * @var Node\Stmt\Namespace_|null $namespaceNode
-         */
-        $namespaceNode = $this->finder->findLastInstanceOf($this->statements, Node\Stmt\Namespace_::class);
-
-        if ($namespaceNode) {
-            array_unshift($namespaceNode->stmts, $node);
-
-            return $this;
-        }
-
-        $targetNode = $this->finder->findLastInstanceOf($this->statements, Node\Stmt\Declare_::class);
-
-        if ($targetNode) {
-            $this->statements = $this->manipulator->insertAfter($this->statements, $targetNode, $node);
-
-            return $this;
-        }
-
-        array_unshift($this->statements, $node);
+        $this->statements = $this->manipulator->addUse($this->statements, $model);
 
         return $this;
     }
@@ -273,17 +229,6 @@ abstract class AbstractFile
                 $relative = $commonNamespace->getNamespaceRelativeTo($class);
 
                 return NamespaceName::fromString($alias . '\\' . $relative->getName());
-            }
-        }
-
-        foreach ($directUses as $namespaceName => $model) {
-            $namespace = $model->getNamespace();
-            $commonNamespace = $namespace->getLongestCommonNamespace($class);
-
-            if ($commonNamespace && $commonNamespace->length() === $namespace->length()) {
-                $relative = $commonNamespace->getNamespaceRelativeTo($class);
-
-                return NamespaceName::fromString($namespaceName . '\\' . $relative->getName());
             }
         }
 

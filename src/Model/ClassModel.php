@@ -6,6 +6,7 @@ namespace SoureCode\PhpObjectModel\Model;
 
 use InvalidArgumentException;
 use PhpParser\Node;
+use SoureCode\PhpObjectModel\File\AbstractFile;
 use SoureCode\PhpObjectModel\File\ClassFile;
 use SoureCode\PhpObjectModel\Node\NodeManipulator;
 use SoureCode\PhpObjectModel\Traits\Attributes;
@@ -95,20 +96,6 @@ class ClassModel extends AbstractClassLikeModel
             throw new InvalidArgumentException(sprintf('Property "%s" already exists.', $property->getName()));
         }
 
-        $node = $property->getNode();
-
-        if (null !== $node->type) {
-            $type = AbstractType::fromNode($node->type);
-
-            if (null !== $this->file) {
-                $resolveTypeNode = $this->file->resolveType($type);
-
-                if (null !== $resolveTypeNode) {
-                    $node->type = $resolveTypeNode;
-                }
-            }
-        }
-
         $targetNode = $this->finder->findLastInstanceOf($this->node, Node\Stmt\Property::class);
 
         if (!$targetNode) {
@@ -118,6 +105,8 @@ class ClassModel extends AbstractClassLikeModel
         if (!$targetNode) {
             $this->finder->findLastInstanceOf($this->node, Node\Stmt\TraitUse::class);
         }
+
+        $node = $property->getNode();
 
         if ($targetNode) {
             $index = (int) array_search($targetNode, $this->node->stmts, true);
@@ -132,6 +121,9 @@ class ClassModel extends AbstractClassLikeModel
             array_unshift($this->node->stmts, $node);
         }
 
+        $property->setFile($this->file);
+        $property->importTypes();
+
         return $this;
     }
 
@@ -143,6 +135,36 @@ class ClassModel extends AbstractClassLikeModel
         $this->manipulator->removeNode($this->node, $property->getNode());
 
         return $this;
+    }
+
+    public function importTypes(): void
+    {
+        // re-set attributes
+        foreach ($this->getAttributes() as $attribute) {
+            $attribute->importTypes();
+        }
+
+        // re-set extend
+        $parent = $this->getParent();
+
+        if (null !== $parent) {
+            $this->extend($parent);
+        }
+
+        // re-set implements
+        foreach ($this->getInterfaces() as $interface) {
+            $this->implementInterface($interface);
+        }
+
+        // re-set properties
+        foreach ($this->getProperties() as $property) {
+            $property->importTypes();
+        }
+
+        // re-set methods
+        foreach ($this->getMethods() as $method) {
+            $method->importTypes();
+        }
     }
 
     /**
@@ -192,27 +214,17 @@ class ClassModel extends AbstractClassLikeModel
         return $model;
     }
 
-    public function addMethod(ClassMethodModel|string $model): self
+    public function addMethod(ClassMethodModel|string $method): self
     {
-        if (is_string($model)) {
-            $model = new ClassMethodModel($model);
+        if (is_string($method)) {
+            $method = new ClassMethodModel($method);
         }
 
-        if ($this->hasMethod($model->getName())) {
-            throw new InvalidArgumentException(sprintf('Method "%s" already exists.', $model->getName()));
+        if ($this->hasMethod($method->getName())) {
+            throw new InvalidArgumentException(sprintf('Method "%s" already exists.', $method->getName()));
         }
 
-        $node = $model->getNode();
-
-        if (null !== $node->returnType) {
-            $type = AbstractType::fromNode($node->returnType);
-
-            $nodeType = $this->file?->resolveType($type);
-
-            if (null !== $nodeType) {
-                $node->returnType = $nodeType;
-            }
-        }
+        $node = $method->getNode();
 
         $targetNode = $this->finder->findLastInstanceOf($this->node, Node\Stmt\ClassMethod::class);
 
@@ -228,6 +240,9 @@ class ClassModel extends AbstractClassLikeModel
         } else {
             $this->node->stmts[] = $node;
         }
+
+        $method->setFile($this->file);
+        $method->importTypes();
 
         return $this;
     }
@@ -255,23 +270,12 @@ class ClassModel extends AbstractClassLikeModel
     // @todo removeTrait (remove)
 
     /**
-     * @psalm-return class-string[]
+     * @return ClassName[]
      */
     public function getInterfaces(): array
     {
         return array_map(static function (Node\Name $node) {
-            if ($node->hasAttribute('resolvedName')) {
-                /**
-                 * @var Node\Name\FullyQualified|null $attr
-                 */
-                $attr = $node->getAttribute('resolvedName');
-
-                if ($attr) {
-                    return $attr->toString();
-                }
-            }
-
-            return $node->toString();
+            return ClassName::fromNode($node);
         }, $this->node->implements);
     }
 
@@ -340,10 +344,16 @@ class ClassModel extends AbstractClassLikeModel
     }
 
     /**
-     * @psalm-param ClassName|class-string|ClassFile $className
+     * @psalm-param ClassName|class-string|string|ClassFile $className
      */
-    public function extend(ClassName|string|ClassFile $className): self
+    public function extend(ClassName|string|ClassFile|null $className): self
     {
+        if (null === $className) {
+            $this->node->extends = null;
+
+            return $this;
+        }
+
         if ($className instanceof ClassFile) {
             $namespace = $className->getNamespace()->getName();
             $class = $className->getClass();
@@ -402,6 +412,61 @@ class ClassModel extends AbstractClassLikeModel
             $this->node->flags |= Node\Stmt\Class_::MODIFIER_READONLY;
         } else {
             $this->node->flags &= ~Node\Stmt\Class_::MODIFIER_READONLY;
+        }
+
+        return $this;
+    }
+
+    public function setFile(?AbstractFile $file): self
+    {
+        parent::setFile($file);
+
+        $this->importTypes();
+
+        return $this;
+    }
+
+    /**
+     * @param AttributeModel[] $attributes
+     */
+    public function setAttributes(array $attributes): self
+    {
+        $this->node->attrGroups = [];
+
+        foreach ($attributes as $attribute) {
+            $this->addAttribute($attribute);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @param PropertyModel[] $properties
+     */
+    public function setProperties(array $properties): self
+    {
+        foreach ($this->getProperties() as $property) {
+            $this->removeProperty($property);
+        }
+
+        foreach ($properties as $property) {
+            $this->addProperty($property);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @param ClassMethodModel[] $methods
+     */
+    private function setMethods(array $methods): self
+    {
+        foreach ($this->getMethods() as $method) {
+            $this->removeMethod($method);
+        }
+
+        foreach ($methods as $method) {
+            $this->addMethod($method);
         }
 
         return $this;

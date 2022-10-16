@@ -35,7 +35,7 @@ abstract class AbstractType
         }
     }
 
-    public static function fromNode(Node\NullableType|Node\Name|Node\Identifier|Node\ComplexType $typeNode): self
+    public static function fromNode(Node\Name|Node\Identifier|Node\ComplexType $typeNode): self
     {
         if ($typeNode instanceof Node\UnionType) {
             /**
