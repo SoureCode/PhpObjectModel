@@ -59,6 +59,10 @@ class AttributeModel extends AbstractModel
             $this->argumentsNode->name = $name;
         }
 
+        foreach ($this->getArguments() as $argument) {
+            $argument->importTypes();
+        }
+
         return $this;
     }
 }

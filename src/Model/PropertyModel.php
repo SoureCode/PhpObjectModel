@@ -68,6 +68,10 @@ class PropertyModel extends AbstractModel
             $this->node->type = $this->file->resolveType(AbstractType::fromNode($type)) ?? $type;
         }
 
+        foreach ($this->getAttributes() as $attribute) {
+            $attribute->importTypes();
+        }
+
         return $this;
     }
 

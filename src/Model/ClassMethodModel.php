@@ -118,4 +118,15 @@ class ClassMethodModel extends AbstractFunctionLikeModel
 
         return $this;
     }
+
+    public function importTypes(): self
+    {
+        parent::importTypes();
+
+        foreach ($this->getAttributes() as $attribute) {
+            $attribute->importTypes();
+        }
+
+        return $this;
+    }
 }
