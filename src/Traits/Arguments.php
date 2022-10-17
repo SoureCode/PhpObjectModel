@@ -94,13 +94,13 @@ trait Arguments
         if (is_string($node)) {
             return null !== $this->finder->findFirst(
                 $this->argumentsNode->args,
-                fn (Node\Arg $arg) => $arg->name && $arg->name->name === $node
+                fn (Node $arg) => $arg instanceof Node\Arg && $arg->name && $arg->name->name === $node
             );
         }
 
         return null !== $this->finder->findFirst(
             $this->argumentsNode->args,
-            fn (Node\Arg $arg) => $arg === $node
+            fn (Node $arg) => $arg === $node
         );
     }
 
