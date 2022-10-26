@@ -6,13 +6,13 @@ namespace SoureCode\PhpObjectModel\Comparer;
 
 use PhpParser\Node;
 
-class PropertyFetchExpressionNodeComparer extends AbstractNodeComparer
+class ClassConstFetchExpressionNodeComparer extends AbstractNodeComparer
 {
     public static function compare(Node $lhs, Node $rhs): bool
     {
-        if ($lhs instanceof Node\Expr\PropertyFetch && $rhs instanceof Node\Expr\PropertyFetch) {
+        if ($lhs instanceof Node\Expr\ClassConstFetch && $rhs instanceof Node\Expr\ClassConstFetch) {
             return AbstractNodeComparer::compareNodes($lhs->name, $rhs->name) &&
-                AbstractNodeComparer::compareNodes($lhs->var, $rhs->var);
+                AbstractNodeComparer::compareNodes($lhs->class, $rhs->class);
         }
 
         return false;

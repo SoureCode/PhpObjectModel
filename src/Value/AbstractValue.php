@@ -93,6 +93,11 @@ abstract class AbstractValue
         return $this->node;
     }
 
+    public function toArgument(): Node\Arg
+    {
+        return new Node\Arg($this->node);
+    }
+
     public static function fromNode(Node $node): ?AbstractValue
     {
         if ($node instanceof Node\Scalar\String_) {

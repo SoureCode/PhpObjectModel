@@ -6,6 +6,7 @@ namespace SoureCode\PhpObjectModel\Model;
 
 use InvalidArgumentException;
 use PhpParser\Node;
+use PhpParser\Node\Expr;
 use SoureCode\PhpObjectModel\File\AbstractFile;
 use SoureCode\PhpObjectModel\File\ClassFile;
 use SoureCode\PhpObjectModel\Node\NodeManipulator;
@@ -107,6 +108,10 @@ class ClassModel extends AbstractClassLikeModel
         }
 
         $node = $property->getNode();
+
+        if ($node instanceof Expr) {
+            $node = new Node\Stmt\Expression($node);
+        }
 
         if ($targetNode) {
             $index = (int) array_search($targetNode, $this->node->stmts, true);

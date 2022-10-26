@@ -6,6 +6,8 @@ namespace SoureCode\PhpObjectModel\Node;
 
 use PhpParser\Node;
 use PhpParser\NodeFinder as BaseNodeFinder;
+use PhpParser\NodeTraverser;
+use SoureCode\PhpObjectModel\Node\Visitor\FindClassTypesVisitor;
 
 class NodeFinder extends BaseNodeFinder
 {
@@ -33,5 +35,23 @@ class NodeFinder extends BaseNodeFinder
         return $this->findLast($nodes, function (Node $node) use ($class) {
             return $node instanceof $class;
         });
+    }
+
+    /**
+     * @return Node\Name[]
+     */
+    public function findTypes(Node|array $nodes): array
+    {
+        if (!is_array($nodes)) {
+            $nodes = [$nodes];
+        }
+
+        $visitor = new FindClassTypesVisitor();
+
+        $traverser = new NodeTraverser();
+        $traverser->addVisitor($visitor);
+        $traverser->traverse($nodes);
+
+        return $visitor->getTypes();
     }
 }

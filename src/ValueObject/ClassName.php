@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace SoureCode\PhpObjectModel\ValueObject;
 
 use PhpParser\Node;
+use SoureCode\PhpObjectModel\Value\AbstractValue;
 
 class ClassName extends AbstractNamespaceName
 {
@@ -40,5 +41,15 @@ class ClassName extends AbstractNamespaceName
     public function toClassConstFetchNode(): Node\Expr\ClassConstFetch
     {
         return new Node\Expr\ClassConstFetch($this->toNode(), 'class');
+    }
+
+    /**
+     * @param AbstractValue[] $args
+     */
+    public function toNewNode(array $args = []): Node\Expr\New_
+    {
+        $args = array_map(static fn (AbstractValue $arg) => $arg->toArgument(), $args);
+
+        return new Node\Expr\New_($this->toNode(), $args);
     }
 }

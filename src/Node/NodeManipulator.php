@@ -7,14 +7,37 @@ namespace SoureCode\PhpObjectModel\Node;
 use PhpParser\Node;
 use PhpParser\NodeTraverser;
 use RuntimeException;
+use SoureCode\PhpObjectModel\File\AbstractFile;
 use SoureCode\PhpObjectModel\Model\UseModel;
 use SoureCode\PhpObjectModel\Node\Visitor\AddUseVisitor;
 use SoureCode\PhpObjectModel\Node\Visitor\InsertAfterVisitor;
 use SoureCode\PhpObjectModel\Node\Visitor\RemoveNodeVisitor;
 use SoureCode\PhpObjectModel\Node\Visitor\ReplaceNodeVisitor;
+use SoureCode\PhpObjectModel\ValueObject\ClassName;
 
 class NodeManipulator
 {
+    public static function importTypes(?AbstractFile $file, Node $rhs): void
+    {
+        if (null === $file) {
+            return;
+        }
+
+        $nodeFinder = new NodeFinder();
+        $types = $nodeFinder->findTypes($rhs);
+
+        foreach ($types as $type) {
+            $className = ClassName::fromNode($type);
+            $replacementNode = $file->resolveUseName($className);
+
+            if (null !== $replacementNode) {
+                $className = ClassName::fromNode($replacementNode);
+                $type->setAttribute('resolvedName', $className->toFqcnNode());
+                $type->parts = [$className->getShortName()];
+            }
+        }
+    }
+
     /**
      * @param Node|Node[] $nodes
      *

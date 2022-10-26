@@ -32,8 +32,10 @@ class NamespaceName extends AbstractNamespaceName
         return new self($node->toString());
     }
 
-    public function class(string $name): ClassName
+    public function class(string|ClassName $name): ClassName
     {
+        $name = $name instanceof ClassName ? $name->getShortName() : $name;
+
         return new ClassName([...$this->parts, $name]);
     }
 

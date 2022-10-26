@@ -6,6 +6,7 @@ namespace SoureCode\PhpObjectModel\Model;
 
 use Exception;
 use PhpParser\Node;
+use SoureCode\PhpObjectModel\ValueObject\ClassName;
 
 /**
  * @template T of Node\Stmt\ClassLike
@@ -14,7 +15,7 @@ use PhpParser\Node;
  */
 abstract class AbstractClassLikeModel extends AbstractModel
 {
-    public function getName(): string
+    public function getName(): ClassName
     {
         /**
          * @var Node\Stmt\ClassLike $node
@@ -25,7 +26,13 @@ abstract class AbstractClassLikeModel extends AbstractModel
             throw new Exception('Invalid class name.');
         }
 
-        return $node->name->name;
+        if (null !== $this->file) {
+            $namespace = $this->file->getNamespace();
+
+            return $namespace->getName()->class($node->name->name);
+        }
+
+        return ClassName::fromString($node->name->name);
     }
 
     public function setName(string $name): self

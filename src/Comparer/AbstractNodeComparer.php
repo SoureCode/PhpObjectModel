@@ -1,18 +1,19 @@
 <?php
 
+declare(strict_types=1);
+
 namespace SoureCode\PhpObjectModel\Comparer;
 
 use PhpParser\Node;
 
 abstract class AbstractNodeComparer
 {
-    public static abstract function compare(Node $lhs, Node $rhs): bool;
+    abstract public static function compare(Node $lhs, Node $rhs): bool;
 
     public static function compareNodes(Node|array $lhs, Node|array $rhs): bool
     {
         $lhs = is_array($lhs) ? $lhs : [$lhs];
         $rhs = is_array($rhs) ? $rhs : [$rhs];
-
 
         if (count($lhs) !== count($rhs)) {
             return false;
@@ -57,6 +58,7 @@ abstract class AbstractNodeComparer
             Node\Expr\PropertyFetch::class => new PropertyFetchExpressionNodeComparer(),
             Node\Expr\Variable::class => new VariableExpressionNodeComparer(),
             Node\Expr\New_::class => new NewExpressionNodeComparer(),
+            Node\Expr\ClassConstFetch::class => new ClassConstFetchExpressionNodeComparer(),
             Node\Stmt\Expression::class => new ExpressionStatementNodeComparer(),
             Node\Scalar\String_::class => new ScalarStringNodeComparer(),
             default => null,

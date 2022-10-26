@@ -6,8 +6,11 @@ namespace SoureCode\PhpObjectModel\Model;
 
 use PhpParser\Node;
 use PhpParser\Node\Stmt\Class_;
+use SoureCode\PhpObjectModel\Node\NodeManipulator;
 use SoureCode\PhpObjectModel\Traits\Attributes;
 use SoureCode\PhpObjectModel\Type\AbstractType;
+use SoureCode\PhpObjectModel\Type\ClassType;
+use SoureCode\PhpObjectModel\Value\AbstractValue;
 
 /**
  * @extends AbstractModel<Node\Stmt\Property>
@@ -170,5 +173,42 @@ class PropertyModel extends AbstractModel
         }
 
         return $this;
+    }
+
+    public function assignTo(ParameterModel|AbstractValue|Node\Expr $value): Node\Expr\Assign
+    {
+        $propertyFetch = new Node\Expr\PropertyFetch(new Node\Expr\Variable('this'), $this->getName());
+
+        if ($value instanceof ParameterModel) {
+            $rhs = $value->toVariable();
+        } elseif ($value instanceof AbstractValue) {
+            $rhs = $value->getNode();
+        } else {
+            $rhs = $value;
+        }
+
+        NodeManipulator::importTypes($this->file, $rhs);
+
+        return new Node\Expr\Assign($propertyFetch, $rhs);
+    }
+
+    public function assignToOrNew(ParameterModel $parameter): Node\Expr\Assign
+    {
+        $propertyFetch = new Node\Expr\PropertyFetch(new Node\Expr\Variable('this'), $this->getName());
+        $type = $parameter->getType();
+
+        if (!$type instanceof ClassType) {
+            throw new \RuntimeException('Parameter type must be a class type');
+        }
+
+        $className = $type->getClassName();
+
+        return new Node\Expr\Assign(
+            $propertyFetch,
+            new Node\Expr\BinaryOp\Coalesce(
+                $parameter->toVariable(),
+                $className->toNewNode(),
+            )
+        );
     }
 }

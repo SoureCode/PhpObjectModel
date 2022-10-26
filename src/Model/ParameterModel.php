@@ -113,4 +113,9 @@ class ParameterModel extends AbstractModel
 
         return AbstractValue::fromNode($this->node->default);
     }
+
+    public function toVariable(): Node\Expr\Variable
+    {
+        return new Node\Expr\Variable($this->getName());
+    }
 }
