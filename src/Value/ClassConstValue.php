@@ -30,7 +30,7 @@ class ClassConstValue extends AbstractValue
     public function getClass(): ClassName
     {
         if ($this->node->class instanceof Node\Name) {
-            return new ClassName($this->node->class->toString());
+            return ClassName::fromNode($this->node->class);
         }
 
         throw new InvalidArgumentException('Class must be a Node\Name');
