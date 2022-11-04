@@ -57,6 +57,10 @@ abstract class AbstractNodeComparer
             Node\Name::class => new NameNodeComparer(),
             Node\Identifier::class => new IdentifierNodeComparer(),
             Node\Arg::class => new ArgNodeComparer(),
+            Node\Param::class => new ParamNodeComparer(),
+            Node\UnionType::class => new UnionTypeNodeComparer(),
+            Node\NullableType::class => new NullableTypeNodeComparer(),
+            Node\IntersectionType::class => new IntersectionTypeNodeComparer(),
             Node\Expr\Assign::class => new AssignExpressionNodeComparer(),
             Node\Expr\PropertyFetch::class => new PropertyFetchExpressionNodeComparer(),
             Node\Expr\Variable::class => new VariableExpressionNodeComparer(),
@@ -65,9 +69,6 @@ abstract class AbstractNodeComparer
             Node\Stmt\ClassMethod::class => new ClassMethodNodeComparer(),
             Node\Stmt\Expression::class => new ExpressionStatementNodeComparer(),
             Node\Scalar\String_::class => new ScalarStringNodeComparer(),
-            Node\UnionType::class => new UnionTypeNodeComparer(),
-            Node\NullableType::class => new NullableTypeNodeComparer(),
-            Node\IntersectionType::class => new IntersectionTypeNodeComparer(),
             default => null,
         };
     }
