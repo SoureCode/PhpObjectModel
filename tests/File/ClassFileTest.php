@@ -23,7 +23,7 @@ class ClassFileTest extends TestCase
         $class = $file->getClass();
         $code = $file->getSourceCode();
 
-        self::assertSame('ExampleClassA', $class->getName());
+        self::assertSame('ExampleClassA', $class->getName()->getShortName());
         self::assertStringContainsString('class ExampleClassA', $code);
         self::assertStringNotContainsString('class Bar', $code);
 

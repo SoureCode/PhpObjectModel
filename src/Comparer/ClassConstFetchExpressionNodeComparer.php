@@ -8,7 +8,7 @@ use PhpParser\Node;
 
 class ClassConstFetchExpressionNodeComparer extends AbstractNodeComparer
 {
-    public static function compare(Node $lhs, Node $rhs): bool
+    public static function compare(Node $lhs, Node $rhs, bool $structural = false): bool
     {
         if ($lhs instanceof Node\Expr\ClassConstFetch && $rhs instanceof Node\Expr\ClassConstFetch) {
             return AbstractNodeComparer::compareNodes($lhs->name, $rhs->name) &&

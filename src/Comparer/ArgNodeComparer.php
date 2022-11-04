@@ -8,7 +8,7 @@ use PhpParser\Node;
 
 class ArgNodeComparer extends AbstractNodeComparer
 {
-    public static function compare(Node $lhs, Node $rhs): bool
+    public static function compare(Node $lhs, Node $rhs, bool $structural = false): bool
     {
         if ($lhs instanceof Node\Arg && $rhs instanceof Node\Arg) {
             if ($lhs->byRef !== $rhs->byRef) {
@@ -19,21 +19,20 @@ class ArgNodeComparer extends AbstractNodeComparer
                 return false;
             }
 
-            if (null !== $lhs->name && null !== $rhs->name) {
-                if (!IdentifierNodeComparer::compare($lhs->name, $rhs->name)) {
-                    return false;
-                }
-            }
-
-            if (null === $lhs->name && null !== $rhs->name) {
+            // @todo is the value part of the structural comparison?
+            if (!self::compareNodes($lhs->value, $rhs->value)) {
                 return false;
             }
 
-            if (null !== $lhs->name && null === $rhs->name) {
+            if ($structural) {
+                return true;
+            }
+
+            if (!self::compareNodes($lhs->name, $rhs->name, $structural)) {
                 return false;
             }
 
-            return self::compareNodes($lhs->value, $rhs->value);
+            return true;
         }
 
         return false;

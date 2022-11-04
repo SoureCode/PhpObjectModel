@@ -42,7 +42,7 @@ class ClassModelTest extends TestCase
     {
         $code = $this->file->getSourceCode();
 
-        self::assertSame('ExampleClassA', $this->class->getName());
+        self::assertSame('ExampleClassA', $this->class->getName()->getShortName());
         self::assertStringContainsString('class ExampleClassA', $code);
 
         $this->class->setName('Foo');

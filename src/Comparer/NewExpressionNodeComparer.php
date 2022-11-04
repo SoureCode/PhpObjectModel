@@ -8,7 +8,7 @@ use PhpParser\Node;
 
 class NewExpressionNodeComparer extends AbstractNodeComparer
 {
-    public static function compare(Node $lhs, Node $rhs): bool
+    public static function compare(Node $lhs, Node $rhs, bool $structural = false): bool
     {
         if ($lhs instanceof Node\Expr\New_ && $rhs instanceof Node\Expr\New_) {
             return AbstractNodeComparer::compareNodes($lhs->class, $rhs->class) &&
