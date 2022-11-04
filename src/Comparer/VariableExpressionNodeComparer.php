@@ -20,7 +20,7 @@ class VariableExpressionNodeComparer extends AbstractNodeComparer
             }
 
             if ($lhs->name instanceof Node\Expr && $rhs->name instanceof Node\Expr) {
-                return AbstractNodeComparer::compareNodes($lhs->name, $rhs->name);
+                return self::compareNodes($lhs->name, $rhs->name, $structural);
             }
         }
 

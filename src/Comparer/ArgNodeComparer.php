@@ -20,7 +20,7 @@ class ArgNodeComparer extends AbstractNodeComparer
             }
 
             // @todo is the value part of the structural comparison?
-            if (!self::compareNodes($lhs->value, $rhs->value)) {
+            if (!self::compareNodes($lhs->value, $rhs->value, $structural)) {
                 return false;
             }
 

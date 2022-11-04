@@ -12,12 +12,12 @@ class ClassMethodNodeComparer extends AbstractNodeComparer
     {
         if ($lhs instanceof Node\Stmt\ClassMethod && $rhs instanceof Node\Stmt\ClassMethod) {
             // params
-            if (!AbstractNodeComparer::compareNodes($lhs->params, $rhs->params)) {
+            if (!AbstractNodeComparer::compareNodes($lhs->params, $rhs->params, $structural)) {
                 return false;
             }
 
             // body
-            if (!AbstractNodeComparer::compareNodes($lhs->stmts, $rhs->stmts)) {
+            if (!AbstractNodeComparer::compareNodes($lhs->stmts, $rhs->stmts, $structural)) {
                 return false;
             }
 
@@ -25,11 +25,11 @@ class ClassMethodNodeComparer extends AbstractNodeComparer
                 return true;
             }
 
-            if (!AbstractNodeComparer::compareNodes($lhs->name, $rhs->name)) {
+            if (!AbstractNodeComparer::compareNodes($lhs->name, $rhs->name, $structural)) {
                 return false;
             }
 
-            if (!AbstractNodeComparer::compareNodes($lhs->returnType, $rhs->returnType)) {
+            if (!AbstractNodeComparer::compareNodes($lhs->returnType, $rhs->returnType, $structural)) {
                 return false;
             }
 

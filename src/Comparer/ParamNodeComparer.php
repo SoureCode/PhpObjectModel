@@ -19,12 +19,12 @@ class ParamNodeComparer extends AbstractNodeComparer
                 return false;
             }
 
-            if (!self::compareNodes($lhs->type, $rhs->type)) {
+            if (!self::compareNodes($lhs->type, $rhs->type, $structural)) {
                 return false;
             }
 
             // @todo is the default value part of the structural comparison?
-            if (!self::compareNodes($lhs->default, $rhs->default)) {
+            if (!self::compareNodes($lhs->default, $rhs->default, $structural)) {
                 return false;
             }
 
