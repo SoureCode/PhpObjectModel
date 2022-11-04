@@ -66,6 +66,7 @@ abstract class AbstractNodeComparer
             Node\Expr\Variable::class => new VariableExpressionNodeComparer(),
             Node\Expr\New_::class => new NewExpressionNodeComparer(),
             Node\Expr\ClassConstFetch::class => new ClassConstFetchExpressionNodeComparer(),
+            Node\Expr\ConstFetch::class => new ConstFetchExpressionNodeComparer(),
             Node\Stmt\ClassMethod::class => new ClassMethodNodeComparer(),
             Node\Stmt\Expression::class => new ExpressionStatementNodeComparer(),
             Node\Scalar\String_::class => new ScalarStringNodeComparer(),
