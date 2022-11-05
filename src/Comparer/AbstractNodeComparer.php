@@ -53,6 +53,10 @@ abstract class AbstractNodeComparer
     {
         $class = get_class($lhs);
 
+        if ($lhs instanceof Node\Expr\BinaryOp) {
+            return new BinaryOpExpressionNodeComparer();
+        }
+
         return match ($class) {
             Node\Name::class => new NameNodeComparer(),
             Node\Identifier::class => new IdentifierNodeComparer(),
@@ -62,7 +66,6 @@ abstract class AbstractNodeComparer
             Node\NullableType::class => new NullableTypeNodeComparer(),
             Node\IntersectionType::class => new IntersectionTypeNodeComparer(),
             Node\Expr\Assign::class => new AssignExpressionNodeComparer(),
-            Node\Expr\BinaryOp::class => new BinaryOpExpressionNodeComparer(),
             Node\Expr\PropertyFetch::class => new PropertyFetchExpressionNodeComparer(),
             Node\Expr\Variable::class => new VariableExpressionNodeComparer(),
             Node\Expr\New_::class => new NewExpressionNodeComparer(),
