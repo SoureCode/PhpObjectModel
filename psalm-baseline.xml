@@ -14,20 +14,6 @@
       <code>$node</code>
     </UnusedForeachValue>
   </file>
-  <file src="src/Comparer/ArgNodeComparer.php">
-    <PossiblyNullArgument occurrences="2">
-      <code>$lhs-&gt;name</code>
-      <code>$rhs-&gt;name</code>
-    </PossiblyNullArgument>
-  </file>
-  <file src="src/Comparer/ClassMethodNodeComparer.php">
-    <PossiblyNullArgument occurrences="4">
-      <code>$lhs-&gt;returnType</code>
-      <code>$lhs-&gt;stmts</code>
-      <code>$rhs-&gt;returnType</code>
-      <code>$rhs-&gt;stmts</code>
-    </PossiblyNullArgument>
-  </file>
   <file src="src/Model/ArgumentModel.php">
     <TypeDoesNotContainType occurrences="1">
       <code>$value instanceof ClassConstValue</code>
@@ -35,7 +21,7 @@
   </file>
   <file src="src/Model/ClassModel.php">
     <DocblockTypeContradiction occurrences="1">
-      <code>$node instanceof Expr</code>
+      <code>$node instanceof Node\Expr</code>
     </DocblockTypeContradiction>
   </file>
   <file src="src/Node/NodeFinder.php">

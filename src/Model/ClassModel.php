@@ -6,7 +6,6 @@ namespace SoureCode\PhpObjectModel\Model;
 
 use InvalidArgumentException;
 use PhpParser\Node;
-use PhpParser\Node\Expr;
 use SoureCode\PhpObjectModel\File\AbstractFile;
 use SoureCode\PhpObjectModel\File\ClassFile;
 use SoureCode\PhpObjectModel\Node\NodeManipulator;
@@ -109,7 +108,7 @@ class ClassModel extends AbstractClassLikeModel
 
         $node = $property->getNode();
 
-        if ($node instanceof Expr) {
+        if ($node instanceof Node\Expr) {
             $node = new Node\Stmt\Expression($node);
         }
 
@@ -349,7 +348,7 @@ class ClassModel extends AbstractClassLikeModel
     }
 
     /**
-     * @psalm-param ClassName|class-string|string|ClassFile $className
+     * @psalm-param ClassName|class-string|string|ClassFile|null $className
      */
     public function extend(ClassName|string|ClassFile|null $className): self
     {
@@ -427,20 +426,6 @@ class ClassModel extends AbstractClassLikeModel
         parent::setFile($file);
 
         $this->importTypes();
-
-        return $this;
-    }
-
-    /**
-     * @param AttributeModel[] $attributes
-     */
-    public function setAttributes(array $attributes): self
-    {
-        $this->node->attrGroups = [];
-
-        foreach ($attributes as $attribute) {
-            $this->addAttribute($attribute);
-        }
 
         return $this;
     }

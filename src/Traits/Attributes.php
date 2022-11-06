@@ -94,4 +94,18 @@ trait Attributes
 
         return $this;
     }
+
+    /**
+     * @param AttributeModel[] $attributes
+     */
+    public function setAttributes(array $attributes): self
+    {
+        $this->node->attrGroups = [];
+
+        foreach ($attributes as $attribute) {
+            $this->addAttribute($attribute);
+        }
+
+        return $this;
+    }
 }
