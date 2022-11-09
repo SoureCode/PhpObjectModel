@@ -10,6 +10,10 @@ abstract class AbstractNodeComparer
 {
     abstract public static function compare(Node $lhs, Node $rhs, bool $structural = false): bool;
 
+    /**
+     * @param Node|Node[]|null $lhs
+     * @param Node|Node[]|null $rhs
+     */
     public static function compareNodes(Node|array|null $lhs, Node|array|null $rhs, bool $structural = false): bool
     {
         $lhs = is_array($lhs) ? $lhs : [$lhs];
@@ -22,14 +26,14 @@ abstract class AbstractNodeComparer
             return false;
         }
 
-        foreach ($lhs as $key => $node) {
-            $comparer = self::getComparer($lhs[$key], $rhs[$key]);
+        foreach ($lhs as $index => $_) {
+            $comparer = self::getComparer($lhs[$index], $rhs[$index]);
 
             if (null === $comparer) {
                 return false;
             }
 
-            if (!$comparer::compare($lhs[$key], $rhs[$key], $structural)) {
+            if (!$comparer::compare($lhs[$index], $rhs[$index], $structural)) {
                 return false;
             }
         }
@@ -78,6 +82,11 @@ abstract class AbstractNodeComparer
         };
     }
 
+    /**
+     * @param Node[] $nodes
+     *
+     * @return Node[]
+     */
     protected static function sortNodes(array $nodes): array
     {
         usort($nodes, static function ($a, $b) {

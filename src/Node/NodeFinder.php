@@ -27,7 +27,7 @@ class NodeFinder extends BaseNodeFinder
     }
 
     /**
-     * @psalm-param  Node|Node[] $nodes
+     * @psalm-param Node|Node[]  $nodes
      * @psalm-param class-string $class
      */
     public function findLastInstanceOf(Node|array $nodes, string $class): ?Node
@@ -38,6 +38,8 @@ class NodeFinder extends BaseNodeFinder
     }
 
     /**
+     * @psalm-param Node|Node[] $nodes
+     *
      * @return Node\Name[]
      */
     public function findTypes(Node|array $nodes): array

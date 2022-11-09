@@ -108,10 +108,6 @@ class ClassModel extends AbstractClassLikeModel
 
         $node = $property->getNode();
 
-        if ($node instanceof Node\Expr) {
-            $node = new Node\Stmt\Expression($node);
-        }
-
         if ($targetNode) {
             $index = (int) array_search($targetNode, $this->node->stmts, true);
 
@@ -449,7 +445,7 @@ class ClassModel extends AbstractClassLikeModel
     /**
      * @param ClassMethodModel[] $methods
      */
-    private function setMethods(array $methods): self
+    public function setMethods(array $methods): self
     {
         foreach ($this->getMethods() as $method) {
             $this->removeMethod($method);

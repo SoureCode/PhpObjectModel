@@ -38,7 +38,13 @@ abstract class AbstractNamespace implements Stringable
 
     public function getShortName(): string
     {
-        return end($this->parts);
+        $shortName = end($this->parts);
+
+        if (empty($shortName)) {
+            throw new InvalidArgumentException('Name must not be empty.');
+        }
+
+        return $shortName;
     }
 
     public function isSame(AbstractNamespace $namespace): bool

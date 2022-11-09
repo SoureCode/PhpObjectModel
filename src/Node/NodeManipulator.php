@@ -30,11 +30,11 @@ class NodeManipulator
             $className = ClassName::fromNode($type);
             $replacementNode = $file->resolveUseName($className);
 
-            if (null !== $replacementNode) {
-                $className = ClassName::fromNode($replacementNode);
-                $type->setAttribute('resolvedName', $className->toFqcnNode());
-                $type->parts = [$className->getShortName()];
-            }
+            $className = ClassName::fromNode($replacementNode);
+
+            $type->setAttribute('resolvedName', $className->toFqcnNode());
+
+            $type->parts = [$className->getShortName()];
         }
     }
 

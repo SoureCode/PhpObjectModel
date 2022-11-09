@@ -24,6 +24,9 @@ use SoureCode\PhpObjectModel\ValueObject\AbstractNamespaceName;
 use SoureCode\PhpObjectModel\ValueObject\ClassName;
 use SoureCode\PhpObjectModel\ValueObject\NamespaceName;
 
+/**
+ * @psalm-consistent-constructor
+ */
 abstract class AbstractFile
 {
     protected Lexer\Emulative $lexer;
