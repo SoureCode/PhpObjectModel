@@ -39,7 +39,7 @@ class InterfaceModel extends AbstractClassLikeModel
         }
 
         // re-set extends
-        foreach ($this->getExtendes() as $extends) {
+        foreach ($this->getExtends() as $extends) {
             $this->extend($extends);
         }
 
@@ -63,7 +63,7 @@ class InterfaceModel extends AbstractClassLikeModel
     /**
      * @return ClassName[]
      */
-    public function getExtendes(): array
+    public function getExtends(): array
     {
         return array_map(static function (Node\Name $node) {
             return ClassName::fromNode($node);
@@ -83,7 +83,9 @@ class InterfaceModel extends AbstractClassLikeModel
             return $this;
         }
 
-        $this->node->extends[] = $name->toNode();
+        $node = $this->file?->resolveUseName($name) ?? $name->toNode();
+
+        $this->node->extends[] = $node;
 
         return $this;
     }
