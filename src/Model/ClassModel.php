@@ -8,6 +8,7 @@ use InvalidArgumentException;
 use PhpParser\Node;
 use SoureCode\PhpObjectModel\File\AbstractFile;
 use SoureCode\PhpObjectModel\File\ClassFile;
+use SoureCode\PhpObjectModel\File\InterfaceFile;
 use SoureCode\PhpObjectModel\Node\NodeManipulator;
 use SoureCode\PhpObjectModel\Traits\Attributes;
 use SoureCode\PhpObjectModel\Type\AbstractType;
@@ -280,11 +281,11 @@ class ClassModel extends AbstractClassLikeModel
     }
 
     /**
-     * @psalm-param  ClassName|class-string $name
+     * @psalm-param InterfaceModel|string|InterfaceFile|ClassName|class-string $name
      */
-    public function implementInterface(ClassName|string $className): self
+    public function implementInterface(InterfaceModel|string|InterfaceFile|ClassName $className): self
     {
-        $className = is_string($className) ? new ClassName($className) : $className;
+        $className = $this->resolveInterfaceClassName($className);
 
         if (!$this->implementsInterface($className)) {
             $node = $this->file?->resolveUseName($className) ?? $className->toNode();
@@ -296,15 +297,18 @@ class ClassModel extends AbstractClassLikeModel
     }
 
     /**
-     * @psalm-param class-string $name
+     * @psalm-param InterfaceModel|string|InterfaceFile|ClassName|class-string $className
      */
-    public function removeInterface(string|ClassName $name): self
+    public function removeInterface(InterfaceModel|string|InterfaceFile|ClassName $className): self
     {
-        $name = $name instanceof ClassName ? $name->getName() : $name;
+        $className = $this->resolveInterfaceClassName($className)->getName();
 
-        $this->node->implements = array_filter($this->node->implements, static function (Node\Name $node) use ($name) {
-            return NodeManipulator::resolveName($node) !== $name;
-        });
+        $this->node->implements = array_filter(
+            $this->node->implements,
+            static function (Node\Name $node) use ($className) {
+                return NodeManipulator::resolveName($node) !== $className;
+            }
+        );
 
         $this->node->implements = array_values($this->node->implements);
 
@@ -312,11 +316,11 @@ class ClassModel extends AbstractClassLikeModel
     }
 
     /**
-     * @param ClassName|class-string $className
+     * @param InterfaceModel|string|InterfaceFile|ClassName|class-string $className
      */
-    public function implementsInterface(ClassName|string $className): bool
+    public function implementsInterface(InterfaceModel|string|InterfaceFile|ClassName $className): bool
     {
-        $className = is_string($className) ? new ClassName($className) : $className;
+        $className = $this->resolveInterfaceClassName($className);
 
         foreach ($this->node->implements as $node) {
             $nodeClassName = ClassName::fromNode($node);
@@ -344,9 +348,9 @@ class ClassModel extends AbstractClassLikeModel
     }
 
     /**
-     * @psalm-param ClassName|class-string|string|ClassFile|null $className
+     * @psalm-param ClassName|string|ClassFile|ClassModel|null $className
      */
-    public function extend(ClassName|string|ClassFile|null $className): self
+    public function extend(ClassName|string|ClassFile|ClassModel|null $className): self
     {
         if (null === $className) {
             $this->node->extends = null;
@@ -354,14 +358,8 @@ class ClassModel extends AbstractClassLikeModel
             return $this;
         }
 
-        if ($className instanceof ClassFile) {
-            $namespace = $className->getNamespace()->getName();
-            $class = $className->getClass();
+        $className = $this->resolveClassName($className);
 
-            $className = $namespace->class($class->getName());
-        }
-
-        $className = is_string($className) ? new ClassName($className) : $className;
         $node = $this->file?->resolveUseName($className) ?? $className->toNode();
 
         $this->node->extends = $node;
@@ -456,5 +454,47 @@ class ClassModel extends AbstractClassLikeModel
         }
 
         return $this;
+    }
+
+    /**
+     * @param InterfaceModel|string|class-string|InterfaceFile|ClassName $className
+     */
+    protected function resolveInterfaceClassName(InterfaceModel|string|InterfaceFile|ClassName $className): ClassName
+    {
+        $className = $className instanceof InterfaceFile ? $className->getInterface() : $className;
+
+        if ($className instanceof InterfaceModel) {
+            $file = $className->getFile();
+
+            if ($file) {
+                $namespace = $file->getNamespace()->getName();
+                $className = $namespace->class($className->getName());
+            } else {
+                $className = $className->getName();
+            }
+        }
+
+        return is_string($className) ? new ClassName($className) : $className;
+    }
+
+    /**
+     * @param ClassModel|ClassFile|string|ClassName|class-string $className
+     */
+    private function resolveClassName(ClassModel|ClassFile|string|ClassName $className): ClassName
+    {
+        $className = $className instanceof ClassFile ? $className->getClass() : $className;
+
+        if ($className instanceof ClassModel) {
+            $file = $className->getFile();
+
+            if ($file) {
+                $namespace = $file->getNamespace()->getName();
+                $className = $namespace->class($className->getName());
+            } else {
+                $className = $className->getName();
+            }
+        }
+
+        return is_string($className) ? new ClassName($className) : $className;
     }
 }
