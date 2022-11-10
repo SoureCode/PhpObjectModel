@@ -8,6 +8,7 @@ use PhpParser\Node;
 use RuntimeException;
 use SoureCode\PhpObjectModel\Type\AbstractType;
 use SoureCode\PhpObjectModel\Value\AbstractValue;
+use SoureCode\PhpObjectModel\Value\ValueInterface;
 
 /**
  * @extends AbstractModel<Node\Param>
@@ -88,9 +89,9 @@ class ParameterModel extends AbstractModel
         throw new RuntimeException('Could not get name of parameter.');
     }
 
-    public function setDefault(Node\Expr|AbstractValue|null $default): self
+    public function setDefault(Node\Expr|ValueInterface|null $default): self
     {
-        if ($default instanceof AbstractValue) {
+        if ($default instanceof ValueInterface) {
             $default = $default->getNode();
         }
 
@@ -105,7 +106,7 @@ class ParameterModel extends AbstractModel
         return $this;
     }
 
-    public function getDefault(): ?AbstractValue
+    public function getDefault(): ?ValueInterface
     {
         if (null === $this->node->default) {
             return null;

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace SoureCode\PhpObjectModel\Type;
 
 use PhpParser\Node;
-use SoureCode\PhpObjectModel\Value\AbstractValue;
+use SoureCode\PhpObjectModel\Value\ValueInterface;
 use SoureCode\PhpObjectModel\ValueObject\ClassName;
 
 class ClassType extends AbstractType
@@ -28,7 +28,7 @@ class ClassType extends AbstractType
     }
 
     /**
-     * @param AbstractValue[] $args
+     * @param ValueInterface[] $args
      */
     public function toNewNode(array $args = []): Node\Expr\New_
     {

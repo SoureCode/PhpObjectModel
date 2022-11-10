@@ -10,7 +10,7 @@ use SoureCode\PhpObjectModel\Node\NodeManipulator;
 use SoureCode\PhpObjectModel\Traits\Attributes;
 use SoureCode\PhpObjectModel\Type\AbstractType;
 use SoureCode\PhpObjectModel\Type\ClassType;
-use SoureCode\PhpObjectModel\Value\AbstractValue;
+use SoureCode\PhpObjectModel\Value\ValueInterface;
 
 /**
  * @extends AbstractModel<Node\Stmt\Property>
@@ -175,13 +175,13 @@ class PropertyModel extends AbstractModel
         return $this;
     }
 
-    public function assignTo(ParameterModel|AbstractValue|Node\Expr $value): Node\Expr\Assign
+    public function assignTo(ParameterModel|ValueInterface|Node\Expr $value): Node\Expr\Assign
     {
         $propertyFetch = new Node\Expr\PropertyFetch(new Node\Expr\Variable('this'), $this->getName());
 
         if ($value instanceof ParameterModel) {
             $rhs = $value->toVariable();
-        } elseif ($value instanceof AbstractValue) {
+        } elseif ($value instanceof ValueInterface) {
             $rhs = $value->getNode();
         } else {
             $rhs = $value;

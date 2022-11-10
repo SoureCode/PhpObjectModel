@@ -9,7 +9,6 @@ use SoureCode\PhpObjectModel\File\ClassFile;
 use SoureCode\PhpObjectModel\Model\ArgumentModel;
 use SoureCode\PhpObjectModel\Model\AttributeModel;
 use SoureCode\PhpObjectModel\Model\ClassModel;
-use SoureCode\PhpObjectModel\Value\AbstractValue;
 use SoureCode\PhpObjectModel\Value\BinaryValue;
 use SoureCode\PhpObjectModel\Value\BooleanValue;
 use SoureCode\PhpObjectModel\Value\ClassConstValue;
@@ -80,6 +79,7 @@ use SoureCode\PhpObjectModel\Value\MagicConst\TraitMagicConstValue;
 use SoureCode\PhpObjectModel\Value\NullValue;
 use SoureCode\PhpObjectModel\Value\OctalValue;
 use SoureCode\PhpObjectModel\Value\StringValue;
+use SoureCode\PhpObjectModel\Value\ValueInterface;
 use SoureCode\PhpObjectModel\Value\VariableValue;
 
 class ValueTest extends TestCase
@@ -169,7 +169,7 @@ class ValueTest extends TestCase
     /**
      * @dataProvider provideValues
      */
-    public function testSetArgumentShouldSetValue(AbstractValue $value, string $expected): void
+    public function testSetArgumentShouldSetValue(ValueInterface $value, string $expected): void
     {
         $classFile = new ClassFile();
         $classModel = new ClassModel('Foo');

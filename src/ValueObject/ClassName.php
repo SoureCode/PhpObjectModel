@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace SoureCode\PhpObjectModel\ValueObject;
 
 use PhpParser\Node;
-use SoureCode\PhpObjectModel\Value\AbstractValue;
+use SoureCode\PhpObjectModel\Value\ValueInterface;
 
 class ClassName extends AbstractNamespaceName
 {
@@ -44,11 +44,11 @@ class ClassName extends AbstractNamespaceName
     }
 
     /**
-     * @param AbstractValue[] $args
+     * @param ValueInterface[] $args
      */
     public function toNewNode(array $args = []): Node\Expr\New_
     {
-        $args = array_map(static fn (AbstractValue $arg) => $arg->toArgument(), $args);
+        $args = array_map(static fn (ValueInterface $arg) => $arg->toArgument(), $args);
 
         return new Node\Expr\New_($this->toNode(), $args);
     }

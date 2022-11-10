@@ -8,16 +8,17 @@ use LogicException;
 use PhpParser\Node;
 use SoureCode\PhpObjectModel\Value\AbstractValue;
 use SoureCode\PhpObjectModel\Value\ClassConstValue;
+use SoureCode\PhpObjectModel\Value\ValueInterface;
 
 /**
  * @extends AbstractModel<Node\Arg>
  */
 class ArgumentModel extends AbstractModel
 {
-    public function __construct(Node\Arg|string $node, AbstractValue|Node\Expr $value = null)
+    public function __construct(Node\Arg|string $node, ValueInterface|Node\Expr $value = null)
     {
         if (is_string($node)) {
-            $value = $value instanceof AbstractValue ? $value->getNode() : $value;
+            $value = $value instanceof ValueInterface ? $value->getNode() : $value;
 
             if (null === $value) {
                 throw new LogicException('Value can not be null if node is a string.');
@@ -51,7 +52,7 @@ class ArgumentModel extends AbstractModel
         return $this;
     }
 
-    public function getValue(): AbstractValue|Node\Expr
+    public function getValue(): ValueInterface|Node\Expr
     {
         $value = AbstractValue::fromNode($this->node->value);
 
@@ -62,9 +63,9 @@ class ArgumentModel extends AbstractModel
         return $this->node->value;
     }
 
-    public function setValue(AbstractValue|Node\Expr $value): self
+    public function setValue(ValueInterface|Node\Expr $value): self
     {
-        if ($value instanceof AbstractValue) {
+        if ($value instanceof ValueInterface) {
             $this->node->value = $value->getNode();
 
             return $this->importTypes();

@@ -69,8 +69,10 @@ use SoureCode\PhpObjectModel\Value\MagicConst\TraitMagicConstValue;
 
 /**
  * @template T of Node\Expr
+ *
+ * @implements ValueInterface<T>
  */
-abstract class AbstractValue
+abstract class AbstractValue implements ValueInterface
 {
     /**
      * @psalm-var T
@@ -98,7 +100,7 @@ abstract class AbstractValue
         return new Node\Arg($this->node);
     }
 
-    public static function fromNode(Node $node): ?AbstractValue
+    public static function fromNode(Node $node): ?ValueInterface
     {
         if ($node instanceof Node\Scalar\String_) {
             return new StringValue($node);
