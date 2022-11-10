@@ -10,7 +10,7 @@ use PhpParser\Node;
 use SoureCode\PhpObjectModel\Type\AbstractType;
 
 /**
- * @template T of Node\Expr\Closure|Node\Stmt\ClassMethod
+ * @template-covariant T of Node\Expr\Closure|Node\Stmt\ClassMethod
  *
  * @extends AbstractModel<T>
  */

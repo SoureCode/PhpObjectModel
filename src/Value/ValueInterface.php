@@ -7,7 +7,7 @@ namespace SoureCode\PhpObjectModel\Value;
 use PhpParser\Node;
 
 /**
- * @template T of Node\Expr
+ * @template-covariant T of Node\Expr
  */
 interface ValueInterface
 {

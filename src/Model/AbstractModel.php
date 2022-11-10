@@ -10,7 +10,7 @@ use SoureCode\PhpObjectModel\Node\NodeFinder;
 use SoureCode\PhpObjectModel\Node\NodeManipulator;
 
 /**
- * @template T of Node
+ * @template-covariant T of Node
  */
 abstract class AbstractModel
 {

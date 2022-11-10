@@ -9,7 +9,7 @@ use PhpParser\Node;
 use SoureCode\PhpObjectModel\ValueObject\ClassName;
 
 /**
- * @template T of Node\Stmt\ClassLike
+ * @template-covariant T of Node\Stmt\ClassLike
  *
  * @extends AbstractModel<T>
  */

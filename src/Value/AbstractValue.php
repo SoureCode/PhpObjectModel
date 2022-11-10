@@ -68,7 +68,7 @@ use SoureCode\PhpObjectModel\Value\MagicConst\NamespaceMagicConstValue;
 use SoureCode\PhpObjectModel\Value\MagicConst\TraitMagicConstValue;
 
 /**
- * @template T of Node\Expr
+ * @template-covariant T of Node\Expr
  *
  * @implements ValueInterface<T>
  */
