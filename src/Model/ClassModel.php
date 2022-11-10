@@ -146,15 +146,15 @@ class ClassModel extends AbstractClassLikeModel
         }
 
         // re-set extend
-        $parent = $this->getParent();
+        $extend = $this->getExtend();
 
-        if (null !== $parent) {
-            $this->extend($parent);
+        if (null !== $extend) {
+            $this->extend($extend);
         }
 
         // re-set implements
         foreach ($this->getInterfaces() as $interface) {
-            $this->implementInterface($interface);
+            $this->implement($interface);
         }
 
         // re-set properties
@@ -283,11 +283,11 @@ class ClassModel extends AbstractClassLikeModel
     /**
      * @psalm-param InterfaceModel|string|InterfaceFile|ClassName|class-string $name
      */
-    public function implementInterface(InterfaceModel|string|InterfaceFile|ClassName $className): self
+    public function implement(InterfaceModel|string|InterfaceFile|ClassName $className): self
     {
         $className = $this->resolveInterfaceClassName($className);
 
-        if (!$this->implementsInterface($className)) {
+        if (!$this->implements($className)) {
             $node = $this->file?->resolveUseName($className) ?? $className->toNode();
 
             $this->node->implements[] = $node;
@@ -318,7 +318,7 @@ class ClassModel extends AbstractClassLikeModel
     /**
      * @param InterfaceModel|string|InterfaceFile|ClassName|class-string $className
      */
-    public function implementsInterface(InterfaceModel|string|InterfaceFile|ClassName $className): bool
+    public function implements(InterfaceModel|string|InterfaceFile|ClassName $className): bool
     {
         $className = $this->resolveInterfaceClassName($className);
 
@@ -333,7 +333,7 @@ class ClassModel extends AbstractClassLikeModel
         return false;
     }
 
-    public function getParent(): ?string
+    public function getExtend(): ?string
     {
         /**
          * @var Node\Name|null $node
@@ -454,27 +454,6 @@ class ClassModel extends AbstractClassLikeModel
         }
 
         return $this;
-    }
-
-    /**
-     * @param InterfaceModel|string|class-string|InterfaceFile|ClassName $className
-     */
-    protected function resolveInterfaceClassName(InterfaceModel|string|InterfaceFile|ClassName $className): ClassName
-    {
-        $className = $className instanceof InterfaceFile ? $className->getInterface() : $className;
-
-        if ($className instanceof InterfaceModel) {
-            $file = $className->getFile();
-
-            if ($file) {
-                $namespace = $file->getNamespace()->getName();
-                $className = $namespace->class($className->getName());
-            } else {
-                $className = $className->getName();
-            }
-        }
-
-        return is_string($className) ? new ClassName($className) : $className;
     }
 
     /**

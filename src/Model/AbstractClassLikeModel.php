@@ -6,6 +6,7 @@ namespace SoureCode\PhpObjectModel\Model;
 
 use Exception;
 use PhpParser\Node;
+use SoureCode\PhpObjectModel\File\InterfaceFile;
 use SoureCode\PhpObjectModel\ValueObject\ClassName;
 
 /**
@@ -40,5 +41,26 @@ abstract class AbstractClassLikeModel extends AbstractModel
         $this->node->name = new Node\Identifier($name);
 
         return $this;
+    }
+
+    /**
+     * @param InterfaceModel|string|class-string|InterfaceFile|ClassName $className
+     */
+    protected function resolveInterfaceClassName(InterfaceModel|string|InterfaceFile|ClassName $className): ClassName
+    {
+        $className = $className instanceof InterfaceFile ? $className->getInterface() : $className;
+
+        if ($className instanceof InterfaceModel) {
+            $file = $className->getFile();
+
+            if ($file) {
+                $namespace = $file->getNamespace()->getName();
+                $className = $namespace->class($className->getName());
+            } else {
+                $className = $className->getName();
+            }
+        }
+
+        return is_string($className) ? new ClassName($className) : $className;
     }
 }

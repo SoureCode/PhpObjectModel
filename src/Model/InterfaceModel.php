@@ -7,6 +7,7 @@ namespace SoureCode\PhpObjectModel\Model;
 use InvalidArgumentException;
 use PhpParser\Node;
 use SoureCode\PhpObjectModel\File\AbstractFile;
+use SoureCode\PhpObjectModel\File\InterfaceFile;
 use SoureCode\PhpObjectModel\Traits\Attributes;
 use SoureCode\PhpObjectModel\ValueObject\ClassName;
 
@@ -37,9 +38,9 @@ class InterfaceModel extends AbstractClassLikeModel
             $attribute->importTypes();
         }
 
-        // re-set parents
-        foreach ($this->getParents() as $parent) {
-            $this->extend($parent);
+        // re-set extends
+        foreach ($this->getExtendes() as $extends) {
+            $this->extend($extends);
         }
 
         // re-set methods
@@ -62,18 +63,23 @@ class InterfaceModel extends AbstractClassLikeModel
     /**
      * @return ClassName[]
      */
-    public function getParents(): array
+    public function getExtendes(): array
     {
         return array_map(static function (Node\Name $node) {
             return ClassName::fromNode($node);
         }, $this->node->extends);
     }
 
-    public function extend(string|ClassName $name): self
+    /**
+     * @param InterfaceModel|string|InterfaceFile|ClassName|class-string $name
+     *
+     * @return $this
+     */
+    public function extend(InterfaceModel|string|InterfaceFile|ClassName $name): self
     {
-        $name = is_string($name) ? new ClassName($name) : $name;
+        $name = $this->resolveInterfaceClassName($name);
 
-        if ($this->hasParent($name)) {
+        if ($this->extends($name)) {
             return $this;
         }
 
@@ -82,14 +88,17 @@ class InterfaceModel extends AbstractClassLikeModel
         return $this;
     }
 
-    public function hasParent(ClassName|string $name): bool
+    /**
+     * @param InterfaceModel|string|InterfaceFile|ClassName|class-string $name
+     */
+    public function extends(InterfaceModel|string|InterfaceFile|ClassName $name): bool
     {
-        $name = is_string($name) ? new ClassName($name) : $name;
+        $name = $this->resolveInterfaceClassName($name);
 
         foreach ($this->node->extends as $node) {
-            $parentName = ClassName::fromNode($node);
+            $nodeName = ClassName::fromNode($node);
 
-            if ($parentName->isSame($name)) {
+            if ($nodeName->isSame($name)) {
                 return true;
             }
         }

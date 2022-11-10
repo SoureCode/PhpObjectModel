@@ -134,14 +134,14 @@ class ClassModelTest extends TestCase
     {
         $code = $this->file->getSourceCode();
 
-        self::assertSame(AbstractBaseClassA::class, $this->class->getParent());
+        self::assertSame(AbstractBaseClassA::class, $this->class->getExtend());
         self::assertStringContainsString('extends AbstractBaseClassA', $code);
 
         $this->class->extend(AbstractBaseClassB::class);
 
         $code = $this->file->getSourceCode();
 
-        self::assertSame(AbstractBaseClassB::class, $this->class->getParent());
+        self::assertSame(AbstractBaseClassB::class, $this->class->getExtend());
         self::assertStringContainsString('extends AbstractBaseClassB', $code);
         self::assertStringContainsString(sprintf('use %s;', AbstractBaseClassB::class), $code);
     }
@@ -226,19 +226,19 @@ class ClassModelTest extends TestCase
 
         self::assertCount(1, $interfaces);
         self::assertEquals([ExampleAInterface::class], $interfaces);
-        self::assertTrue($this->class->implementsInterface(ExampleAInterface::class));
-        self::assertFalse($this->class->implementsInterface(ExampleBInterface::class));
+        self::assertTrue($this->class->implements(ExampleAInterface::class));
+        self::assertFalse($this->class->implements(ExampleBInterface::class));
         self::assertStringContainsString('implements ExampleAInterface' . PHP_EOL, $code);
 
-        $this->class->implementInterface(ExampleBInterface::class);
+        $this->class->implement(ExampleBInterface::class);
 
         $interfaces = $this->class->getInterfaces();
         $code = $this->file->getSourceCode();
 
         self::assertCount(2, $interfaces);
         self::assertEquals([ExampleAInterface::class, ExampleBInterface::class], $interfaces);
-        self::assertTrue($this->class->implementsInterface(ExampleAInterface::class));
-        self::assertTrue($this->class->implementsInterface(ExampleBInterface::class));
+        self::assertTrue($this->class->implements(ExampleAInterface::class));
+        self::assertTrue($this->class->implements(ExampleBInterface::class));
         self::assertStringContainsString('implements ExampleAInterface, ExampleBInterface' . PHP_EOL, $code);
         self::assertStringContainsString(sprintf('use %s;', ExampleBInterface::class), $code);
 
@@ -249,8 +249,8 @@ class ClassModelTest extends TestCase
 
         self::assertCount(1, $interfaces);
         self::assertEquals([ExampleBInterface::class], $interfaces);
-        self::assertTrue($this->class->implementsInterface(ExampleBInterface::class));
-        self::assertFalse($this->class->implementsInterface(ExampleAInterface::class));
+        self::assertTrue($this->class->implements(ExampleBInterface::class));
+        self::assertFalse($this->class->implements(ExampleAInterface::class));
         self::assertStringContainsString('implements ExampleBInterface' . PHP_EOL, $code);
         self::assertStringContainsString(sprintf('use %s;', ExampleBInterface::class), $code);
     }

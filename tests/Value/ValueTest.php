@@ -184,12 +184,4 @@ class ValueTest extends TestCase
 
         self::assertStringContainsString($expected, $code);
     }
-
-    public function testType(): void
-    {
-        $argument = new ArgumentModel('test');
-        $argument->setValue(new StringValue('foo'));
-
-        self::assertSame('string', $argument->getValue()->getType());
-    }
 }
