@@ -5,4 +5,12 @@
       <code>[$className-&gt;getShortName()]</code>
     </PropertyTypeCoercion>
   </file>
+  <file src="src/ValueObject/ClassName.php">
+    <LessSpecificReturnStatement occurrences="1">
+      <code>parent::getName()</code>
+    </LessSpecificReturnStatement>
+    <MoreSpecificReturnType occurrences="1">
+      <code>class-string</code>
+    </MoreSpecificReturnType>
+  </file>
 </files>

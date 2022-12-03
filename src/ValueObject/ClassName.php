@@ -52,4 +52,12 @@ class ClassName extends AbstractNamespaceName
 
         return new Node\Expr\New_($this->toNode(), $args);
     }
+
+    /**
+     * @return class-string
+     */
+    public function getName(): string
+    {
+        return parent::getName();
+    }
 }
