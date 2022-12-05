@@ -59,3 +59,16 @@ class Foo
 {
 }
 ```
+
+## Multiple class constants
+
+Multiple class constants in a single definition are not supported.
+
+```php
+<?php
+
+class Foo
+{
+    const FOO = 1, BAR = 2;
+}
+```

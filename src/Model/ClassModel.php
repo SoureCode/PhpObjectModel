@@ -110,14 +110,7 @@ class ClassModel extends AbstractClassLikeModel
         $node = $property->getNode();
 
         if ($targetNode) {
-            $index = (int) array_search($targetNode, $this->node->stmts, true);
-
-            array_splice(
-                $this->node->stmts,
-                $index + 1,
-                0,
-                [$node]
-            );
+            $this->manipulator->insertAfter($this->node, $targetNode, $node);
         } else {
             array_unshift($this->node->stmts, $node);
         }
@@ -230,14 +223,7 @@ class ClassModel extends AbstractClassLikeModel
         $targetNode = $this->finder->findLastInstanceOf($this->node, Node\Stmt\ClassMethod::class);
 
         if ($targetNode) {
-            $index = (int) array_search($targetNode, $this->node->stmts, true);
-
-            array_splice(
-                $this->node->stmts,
-                $index + 1,
-                0,
-                [$node]
-            );
+            $this->manipulator->insertAfter($this->node, $targetNode, $node);
         } else {
             $this->node->stmts[] = $node;
         }
@@ -257,15 +243,7 @@ class ClassModel extends AbstractClassLikeModel
         return $this;
     }
 
-    // @todo get constants
-
-    // @todo has constant
-    // @todo get constant
-    // @todo add constant
-    // @todo remove constant
-
     // @todo getTraits
-
     // @todo usesTrait (has)
     // @todo useTrait (add)
     // @todo removeTrait (remove)

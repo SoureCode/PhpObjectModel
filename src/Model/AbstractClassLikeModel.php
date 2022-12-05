@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace SoureCode\PhpObjectModel\Model;
 
-use Exception;
 use PhpParser\Node;
+use RuntimeException;
 use SoureCode\PhpObjectModel\File\InterfaceFile;
+use SoureCode\PhpObjectModel\Value\ValueInterface;
 use SoureCode\PhpObjectModel\ValueObject\ClassName;
 
 /**
@@ -24,7 +25,7 @@ abstract class AbstractClassLikeModel extends AbstractModel
         $node = $this->node;
 
         if (null === $node->name) {
-            throw new Exception('Invalid class name.');
+            throw new RuntimeException('Class name not found.');
         }
 
         if (null !== $this->file) {
@@ -62,5 +63,90 @@ abstract class AbstractClassLikeModel extends AbstractModel
         }
 
         return is_string($className) ? new ClassName($className) : $className;
+    }
+
+    /**
+     * @return ClassConstModel[]
+     */
+    public function getConstants(): array
+    {
+        /**
+         * @var Node\Stmt\ClassConst[] $nodes
+         */
+        $nodes = $this->finder->findInstanceOf($this->node, Node\Stmt\ClassConst::class);
+
+        return array_map(
+            function (Node\Stmt\ClassConst $node) {
+                $model = new ClassConstModel($node);
+                $model->setFile($this->file);
+
+                return $model;
+            },
+            $nodes
+        );
+    }
+
+    public function hasConstant(string|ClassConstModel $name): bool
+    {
+        if ($name instanceof ClassConstModel) {
+            $name = $name->getName();
+        }
+
+        $node = $this->finder->findFirst($this->node, function (Node $node) use ($name) {
+            return $node instanceof Node\Stmt\ClassConst && $node->consts[0]->name->name === $name;
+        });
+
+        return null !== $node;
+    }
+
+    public function getConstant(string $name): ClassConstModel
+    {
+        /**
+         * @var Node\Stmt\ClassConst|null $node
+         */
+        $node = $this->finder->findFirst($this->node, function (Node $node) use ($name) {
+            return $node instanceof Node\Stmt\ClassConst && $node->consts[0]->name->name === $name;
+        });
+
+        if (null === $node) {
+            throw new \RuntimeException(sprintf('Constant "%s" not found.', $name));
+        }
+
+        $model = new ClassConstModel($node);
+        $model->setFile($this->file);
+
+        return $model;
+    }
+
+    public function addConstant(ClassConstModel|string $model, ValueInterface $value = null): self
+    {
+        if (is_string($model)) {
+            $model = new ClassConstModel($model, $value);
+        }
+
+        $targetNode = $this->finder->findLastInstanceOf($this->node, Node\Stmt\ClassConst::class);
+
+        $node = $model->getNode();
+
+        if ($targetNode) {
+            $this->manipulator->insertAfter($this->node, $targetNode, $node);
+        } else {
+            array_unshift($this->node->stmts, $node);
+        }
+
+        $model->setFile($this->file);
+        // $model->importTypes(); // TODO?
+
+        return $this;
+    }
+
+    public function removeConstant(string|ClassConstModel $name): self
+    {
+        $name = $name instanceof ClassConstModel ? $name->getName() : $name;
+        $property = $this->getConstant($name);
+
+        $this->manipulator->removeNode($this->node, $property->getNode());
+
+        return $this;
     }
 }
