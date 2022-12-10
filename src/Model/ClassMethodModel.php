@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace SoureCode\PhpObjectModel\Model;
 
 use PhpParser\Node;
+use PhpParser\Node\Arg;
 use SoureCode\PhpObjectModel\Traits\Attributes;
+use SoureCode\PhpObjectModel\Value\ValueInterface;
 
 /**
  * @extends AbstractFunctionLikeModel<Node\Stmt\ClassMethod>
@@ -128,5 +130,27 @@ class ClassMethodModel extends AbstractFunctionLikeModel
         }
 
         return $this;
+    }
+
+    /**
+     * @param array<Arg|ParameterModel|ValueInterface> $arguments
+     */
+    public function toParentCall(array $arguments): Node\Expr\StaticCall
+    {
+        return new Node\Expr\StaticCall(
+            new Node\Name('parent'),
+            new Node\Identifier($this->getName()),
+            array_map(static function ($argument) {
+                if ($argument instanceof ParameterModel) {
+                    return new Node\Arg($argument->toVariable());
+                }
+
+                if ($argument instanceof ValueInterface) {
+                    return new Node\Arg($argument->getNode());
+                }
+
+                return $argument;
+            }, $arguments),
+        );
     }
 }
