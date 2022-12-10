@@ -6,6 +6,7 @@ namespace SoureCode\PhpObjectModel\Model;
 
 use PhpParser\Node;
 use SoureCode\PhpObjectModel\File\AbstractFile;
+use SoureCode\PhpObjectModel\File\ClassFile;
 use SoureCode\PhpObjectModel\Node\NodeFinder;
 use SoureCode\PhpObjectModel\Node\NodeManipulator;
 
@@ -53,5 +54,14 @@ abstract class AbstractModel
     public function getFile(): ?AbstractFile
     {
         return $this->file;
+    }
+
+    public function getClass(): ?ClassModel
+    {
+        if ($this->file instanceof ClassFile) {
+            return $this->file->getClass();
+        }
+
+        return null;
     }
 }

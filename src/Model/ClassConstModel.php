@@ -119,4 +119,20 @@ class ClassConstModel extends AbstractModel
 
         return $this;
     }
+
+    public function toClassConstFetchNode(bool $self = false): Node\Expr\ClassConstFetch
+    {
+        $classModel = $this->getClass();
+        $className = $classModel?->getName();
+        $classNameNode = $className?->toNode();
+
+        if (null === $classNameNode) {
+            throw new InvalidArgumentException('File must be set.');
+        }
+
+        return new Node\Expr\ClassConstFetch(
+            $classNameNode,
+            $this->getName(),
+        );
+    }
 }
