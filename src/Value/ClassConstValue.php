@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace SoureCode\PhpObjectModel\Value;
 
-use InvalidArgumentException;
 use PhpParser\Node;
 use SoureCode\PhpObjectModel\ValueObject\ClassName;
 
@@ -33,7 +32,7 @@ class ClassConstValue extends AbstractValue
             return ClassName::fromNode($this->node->class);
         }
 
-        throw new InvalidArgumentException('Class must be a Node\Name');
+        throw new \InvalidArgumentException('Class must be a Node\Name');
     }
 
     public function setClass(ClassName|string $className): ClassConstValue
@@ -58,6 +57,6 @@ class ClassConstValue extends AbstractValue
             return $this->node->name->name;
         }
 
-        throw new InvalidArgumentException('Const name is not an identifier');
+        throw new \InvalidArgumentException('Const name is not an identifier');
     }
 }

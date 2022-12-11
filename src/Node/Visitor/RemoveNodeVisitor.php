@@ -10,16 +10,22 @@ use PhpParser\NodeVisitorAbstract;
 
 class RemoveNodeVisitor extends NodeVisitorAbstract
 {
-    private Node $node;
+    /**
+     * @var Node[]
+     */
+    private array $nodes;
 
-    public function __construct(Node $node)
+    /**
+     * @param Node[]|Node $nodes
+     */
+    public function __construct(array|Node $nodes)
     {
-        $this->node = $node;
+        $this->nodes = is_array($nodes) ? $nodes : [$nodes];
     }
 
     public function leaveNode(Node $node)
     {
-        if ($node === $this->node) {
+        if (in_array($node, $this->nodes, true)) {
             return NodeTraverser::REMOVE_NODE;
         }
     }

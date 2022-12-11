@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace SoureCode\PhpObjectModel\Model;
 
-use LogicException;
 use PhpParser\Node;
 use SoureCode\PhpObjectModel\ValueObject\AbstractNamespaceName;
 use SoureCode\PhpObjectModel\ValueObject\ClassName;
@@ -68,13 +67,13 @@ class UseModel extends AbstractModel
     public function getAlias(): string
     {
         if (!$this->hasAlias()) {
-            throw new LogicException('Use statement has no alias.');
+            throw new \LogicException('Use statement has no alias.');
         }
 
         $alias = $this->useUse->alias?->name ?? null;
 
         if (null === $alias) {
-            throw new LogicException('Use statement has no alias.');
+            throw new \LogicException('Use statement has no alias.');
         }
 
         return $alias;

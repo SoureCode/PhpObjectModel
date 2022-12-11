@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace SoureCode\PhpObjectModel\Traits;
 
-use InvalidArgumentException;
 use PhpParser\Node;
 use SoureCode\PhpObjectModel\Model\AttributeModel;
 use SoureCode\PhpObjectModel\ValueObject\ClassName;
@@ -62,7 +61,7 @@ trait Attributes
             }
         }
 
-        throw new InvalidArgumentException(sprintf('Attribute "%s" not found', $name->getName()));
+        throw new \InvalidArgumentException(sprintf('Attribute "%s" not found', $name->getName()));
     }
 
     public function removeAttribute(AttributeModel|string|ClassName $model): self
@@ -84,7 +83,7 @@ trait Attributes
 
         if ($this->hasAttribute($attribute->getName())) {
             $name = $attribute->getName();
-            throw new InvalidArgumentException(sprintf('Attribute "%s" already exists', $name->getName()));
+            throw new \InvalidArgumentException(sprintf('Attribute "%s" already exists', $name->getName()));
         }
 
         $this->node->attrGroups = [...$this->node->attrGroups, $attribute->getNode()];

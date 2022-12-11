@@ -4,10 +4,7 @@ declare(strict_types=1);
 
 namespace SoureCode\PhpObjectModel\ValueObject;
 
-use InvalidArgumentException;
-use Stringable;
-
-abstract class AbstractNamespace implements Stringable
+abstract class AbstractNamespace implements \Stringable
 {
     /**
      * @var string[]
@@ -22,7 +19,7 @@ abstract class AbstractNamespace implements Stringable
         $this->parts = array_filter(is_string($nameOrParts) ? explode('\\', $nameOrParts) : $nameOrParts);
 
         if (0 === count($this->parts)) {
-            throw new InvalidArgumentException('Name must not be empty.');
+            throw new \InvalidArgumentException('Name must not be empty.');
         }
     }
 
@@ -36,12 +33,15 @@ abstract class AbstractNamespace implements Stringable
         return $this->parts;
     }
 
+    /**
+     * @psalm-return non-empty-string
+     */
     public function getShortName(): string
     {
         $shortName = end($this->parts);
 
         if (empty($shortName)) {
-            throw new InvalidArgumentException('Name must not be empty.');
+            throw new \InvalidArgumentException('Name must not be empty.');
         }
 
         return $shortName;

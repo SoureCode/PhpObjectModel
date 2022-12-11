@@ -6,7 +6,6 @@ namespace SoureCode\PhpObjectModel\Node;
 
 use PhpParser\Node;
 use PhpParser\NodeTraverser;
-use RuntimeException;
 use SoureCode\PhpObjectModel\File\AbstractFile;
 use SoureCode\PhpObjectModel\Model\UseModel;
 use SoureCode\PhpObjectModel\Node\Visitor\AddUseVisitor;
@@ -57,17 +56,18 @@ class NodeManipulator
 
     /**
      * @psalm-param Node|Node[] $nodes
+     * @psalm-param Node|Node[] $nodesToRemove
      *
      * @return Node[]
      */
-    public function removeNode(Node|array $nodes, Node $node): array
+    public function removeNode(Node|array $nodes, Node|array $nodesToRemove): array
     {
         if (!is_array($nodes)) {
             $nodes = [$nodes];
         }
 
         $traverser = new NodeTraverser();
-        $traverser->addVisitor(new RemoveNodeVisitor($node));
+        $traverser->addVisitor(new RemoveNodeVisitor($nodesToRemove));
 
         return $traverser->traverse($nodes);
     }
@@ -121,7 +121,7 @@ class NodeManipulator
             return $arg->value->value;
         }
 
-        throw new RuntimeException('Could not resolve argument.');
+        throw new \RuntimeException('Could not resolve argument.');
     }
 
     /**

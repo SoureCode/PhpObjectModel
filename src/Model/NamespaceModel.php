@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace SoureCode\PhpObjectModel\Model;
 
 use PhpParser\Node;
-use RuntimeException;
 use SoureCode\PhpObjectModel\ValueObject\NamespaceName;
 
 /**
@@ -29,7 +28,7 @@ class NamespaceModel extends AbstractModel
     public function getName(): NamespaceName
     {
         if (null === $this->node->name) {
-            throw new RuntimeException('Namespace has no name.');
+            throw new \RuntimeException('Namespace has no name.');
         }
 
         return NamespaceName::fromNode($this->node->name);

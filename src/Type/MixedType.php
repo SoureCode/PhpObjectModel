@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace SoureCode\PhpObjectModel\Type;
 
 use PhpParser\Node;
-use RuntimeException;
 
 class MixedType extends AbstractType
 {
@@ -17,7 +16,7 @@ class MixedType extends AbstractType
     public function setNullable(bool $nullable): AbstractType
     {
         if ($nullable) {
-            throw new RuntimeException('Mixed type can not be nullable.');
+            throw new \RuntimeException('Mixed type can not be nullable.');
         }
 
         return $this;

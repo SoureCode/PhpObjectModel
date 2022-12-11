@@ -299,7 +299,7 @@ abstract class AbstractFile
 
                 $typeNode = $this->resolveClassType($unionType);
 
-                $node->types = array_map(function (Node $node) use ($typeNode, $unionType): Node {
+                $node->types = array_map(static function (Node $node) use ($typeNode, $unionType): Node {
                     if ($node instanceof Node\Name && $node->toString() === $unionType->getClassName()->getName()) {
                         return $typeNode;
                     }
@@ -352,7 +352,7 @@ abstract class AbstractFile
         }
 
         /**
-         * @var Node\Stmt[] $statements
+         * @var list<Node\Stmt> $statements
          */
         $statements = array_filter($this->statements, static function (Node $node): bool {
             return !$node instanceof Node\Stmt\Declare_;

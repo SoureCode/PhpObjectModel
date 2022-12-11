@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace SoureCode\PhpObjectModel\Type;
 
 use PhpParser\Node;
-use RuntimeException;
 
 class IntersectionType extends ComplexType
 {
@@ -61,7 +60,7 @@ class IntersectionType extends ComplexType
 
         foreach ($types as $type) {
             if ($type->isNullable()) {
-                throw new RuntimeException('Intersection type can not contain nullable types.');
+                throw new \RuntimeException('Intersection type can not contain nullable types.');
             }
 
             $this->addType($type);
@@ -70,7 +69,7 @@ class IntersectionType extends ComplexType
 
     public function setNullable(bool $nullable): AbstractType
     {
-        throw new RuntimeException('Intersection types can not be nullable.');
+        throw new \RuntimeException('Intersection types can not be nullable.');
     }
 
     public function isNullable(): bool

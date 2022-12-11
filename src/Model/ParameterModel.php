@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace SoureCode\PhpObjectModel\Model;
 
 use PhpParser\Node;
-use RuntimeException;
 use SoureCode\PhpObjectModel\Type\AbstractType;
 use SoureCode\PhpObjectModel\Value\AbstractValue;
 use SoureCode\PhpObjectModel\Value\ValueInterface;
@@ -86,7 +85,7 @@ class ParameterModel extends AbstractModel
             return $this->node->var->name;
         }
 
-        throw new RuntimeException('Could not get name of parameter.');
+        throw new \RuntimeException('Could not get name of parameter.');
     }
 
     public function setDefault(Node\Expr|ValueInterface|null $default): self

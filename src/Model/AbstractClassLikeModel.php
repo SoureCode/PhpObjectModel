@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace SoureCode\PhpObjectModel\Model;
 
 use PhpParser\Node;
-use RuntimeException;
 use SoureCode\PhpObjectModel\File\InterfaceFile;
 use SoureCode\PhpObjectModel\Value\ValueInterface;
 use SoureCode\PhpObjectModel\ValueObject\ClassName;
@@ -25,7 +24,7 @@ abstract class AbstractClassLikeModel extends AbstractModel
         $node = $this->node;
 
         if (null === $node->name) {
-            throw new RuntimeException('Class name not found.');
+            throw new \RuntimeException('Class name not found.');
         }
 
         if (null !== $this->file) {

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace SoureCode\PhpObjectModel\Model;
 
-use InvalidArgumentException;
 use PhpParser\Node;
 use SoureCode\PhpObjectModel\File\AbstractFile;
 use SoureCode\PhpObjectModel\File\ClassFile;
@@ -78,7 +77,7 @@ class ClassModel extends AbstractClassLikeModel
         });
 
         if (null === $node) {
-            throw new InvalidArgumentException(sprintf('Property "%s" not found.', $name));
+            throw new \InvalidArgumentException(sprintf('Property "%s" not found.', $name));
         }
 
         $model = new PropertyModel($node);
@@ -94,7 +93,7 @@ class ClassModel extends AbstractClassLikeModel
         }
 
         if ($this->hasProperty($property->getName())) {
-            throw new InvalidArgumentException(sprintf('Property "%s" already exists.', $property->getName()));
+            throw new \InvalidArgumentException(sprintf('Property "%s" already exists.', $property->getName()));
         }
 
         $targetNode = $this->finder->findLastInstanceOf($this->node, Node\Stmt\Property::class);
@@ -199,7 +198,7 @@ class ClassModel extends AbstractClassLikeModel
         });
 
         if (null === $node) {
-            throw new InvalidArgumentException(sprintf('Method "%s" not found.', $name));
+            throw new \InvalidArgumentException(sprintf('Method "%s" not found.', $name));
         }
 
         $model = new ClassMethodModel($node);
@@ -215,7 +214,7 @@ class ClassModel extends AbstractClassLikeModel
         }
 
         if ($this->hasMethod($method->getName())) {
-            throw new InvalidArgumentException(sprintf('Method "%s" already exists.', $method->getName()));
+            throw new \InvalidArgumentException(sprintf('Method "%s" already exists.', $method->getName()));
         }
 
         $node = $method->getNode();

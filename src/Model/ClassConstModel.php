@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace SoureCode\PhpObjectModel\Model;
 
-use InvalidArgumentException;
 use PhpParser\Node;
 use SoureCode\PhpObjectModel\Value\AbstractValue;
 use SoureCode\PhpObjectModel\Value\NullValue;
@@ -19,7 +18,7 @@ class ClassConstModel extends AbstractModel
     {
         if (is_string($node)) {
             if (null === $value) {
-                throw new InvalidArgumentException('Value must be set if node is a string.');
+                throw new \InvalidArgumentException('Value must be set if node is a string.');
             }
 
             $node = new Node\Stmt\ClassConst([
@@ -127,7 +126,7 @@ class ClassConstModel extends AbstractModel
         $classNameNode = $className?->toNode();
 
         if (null === $classNameNode) {
-            throw new InvalidArgumentException('File must be set.');
+            throw new \InvalidArgumentException('File must be set.');
         }
 
         return new Node\Expr\ClassConstFetch(

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace SoureCode\PhpObjectModel\Model;
 
-use LogicException;
 use PhpParser\Node;
 
 /**
@@ -67,7 +66,7 @@ class DeclareModel extends AbstractModel
     public function getTicks(): int
     {
         if (!$this->hasTicks()) {
-            throw new LogicException('Declare statement has no ticks.');
+            throw new \LogicException('Declare statement has no ticks.');
         }
 
         /**
@@ -126,7 +125,7 @@ class DeclareModel extends AbstractModel
     public function getEncoding(): string
     {
         if (!$this->hasEncoding()) {
-            throw new LogicException('Declare statement has no encoding.');
+            throw new \LogicException('Declare statement has no encoding.');
         }
 
         /**

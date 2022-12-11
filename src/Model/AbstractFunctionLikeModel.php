@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace SoureCode\PhpObjectModel\Model;
 
-use InvalidArgumentException;
 use PhpParser\BuilderFactory;
 use PhpParser\Node;
 use SoureCode\PhpObjectModel\Type\AbstractType;
@@ -99,7 +98,7 @@ abstract class AbstractFunctionLikeModel extends AbstractModel
         });
 
         if (null === $node) {
-            throw new InvalidArgumentException(sprintf('Param "%s" not found.', $name));
+            throw new \InvalidArgumentException(sprintf('Param "%s" not found.', $name));
         }
 
         $model = new ParameterModel($node);
@@ -113,13 +112,13 @@ abstract class AbstractFunctionLikeModel extends AbstractModel
 
     public function addParameter(ParameterModel|string $param, AbstractType|string|null $type = null): self
     {
-        $param = is_string($param) ? new ParameterModel($param, $type) : $param;
+        if (is_string($param)) {
+            $param = new ParameterModel($param, $type);
+        }
+
         $param->setFile($this->file);
 
-        $this->node->params = [
-            ...$this->node->params,
-            $param->getNode(),
-        ];
+        $this->node->params[] = $param->getNode();
 
         $param->importTypes();
 

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace SoureCode\PhpObjectModel\Type;
 
 use PhpParser\Node;
-use RuntimeException;
 use SoureCode\PhpObjectModel\Node\NodeManipulator;
 use SoureCode\PhpObjectModel\ValueObject\ClassName;
 
@@ -55,7 +54,7 @@ abstract class AbstractType
                 if ($node instanceof PrimitiveType || $node instanceof ResourceType || $node instanceof ClassType) {
                     $types[] = $node;
                 } else {
-                    throw new RuntimeException('Union type can only contain primitive, resource or class types.');
+                    throw new \RuntimeException('Union type can only contain primitive, resource or class types.');
                 }
             }
 
@@ -75,7 +74,7 @@ abstract class AbstractType
                 $node = self::fromNode($type);
 
                 if (!($node instanceof ClassType)) {
-                    throw new RuntimeException('Intersection type can only contain class types.');
+                    throw new \RuntimeException('Intersection type can only contain class types.');
                 }
 
                 $types[] = $node;
@@ -90,7 +89,7 @@ abstract class AbstractType
             $nullable = true;
             $typeNode = $typeNode->type;
         } elseif ($typeNode instanceof Node\ComplexType) {
-            throw new RuntimeException('Not implemented');
+            throw new \RuntimeException('Not implemented');
         }
 
         if ($typeNode instanceof Node\Identifier) {
@@ -100,7 +99,7 @@ abstract class AbstractType
         }
 
         if (null === $type) {
-            throw new RuntimeException(sprintf('Could not resolve type for "%s".', $typeNode::class));
+            throw new \RuntimeException(sprintf('Could not resolve type for "%s".', $typeNode::class));
         }
 
         $type->setNullable($nullable);
@@ -130,7 +129,7 @@ abstract class AbstractType
                 ) {
                     $typeNodes[] = $typeNode;
                 } else {
-                    throw new RuntimeException('Union type can only contain primitive, resource or class types.');
+                    throw new \RuntimeException('Union type can only contain primitive, resource or class types.');
                 }
             }
 
@@ -148,7 +147,7 @@ abstract class AbstractType
                 $typeNode = self::fromString($type);
 
                 if (!($typeNode instanceof ClassType)) {
-                    throw new RuntimeException('Intersection type can only contain class types.');
+                    throw new \RuntimeException('Intersection type can only contain class types.');
                 }
 
                 $typeNodes[] = $typeNode;

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace SoureCode\PhpObjectModel\Value;
 
-use LogicException;
 use PhpParser\Node;
 
 /**
@@ -34,6 +33,6 @@ class VariableValue extends AbstractValue
             return $this->node->name;
         }
 
-        throw new LogicException('Variable name is not a string.');
+        throw new \LogicException('Variable name is not a string.');
     }
 }

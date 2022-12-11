@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace SoureCode\PhpObjectModel\File;
 
-use Exception;
 use PhpParser\Node;
 use SoureCode\PhpObjectModel\Model\InterfaceModel;
 use SoureCode\PhpObjectModel\ValueObject\ClassName;
@@ -28,7 +27,7 @@ class InterfaceFile extends AbstractFile
         });
 
         if (null === $node) {
-            throw new Exception('Interface not found.');
+            throw new \Exception('Interface not found.');
         }
 
         $model = new InterfaceModel($node);

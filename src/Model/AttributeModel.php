@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace SoureCode\PhpObjectModel\Model;
 
-use LogicException;
 use PhpParser\Node;
 use SoureCode\PhpObjectModel\Traits\Arguments;
 use SoureCode\PhpObjectModel\ValueObject\ClassName;
@@ -34,10 +33,10 @@ class AttributeModel extends AbstractModel
             ]);
         }
 
-        $attributeNode = array_key_exists(0, $nodeOrName->attrs) ? $nodeOrName->attrs[0] : null;
+        $attributeNode = $nodeOrName->attrs[0] ?? null;
 
         if (null === $attributeNode) {
-            throw new LogicException('Attribute node is null.');
+            throw new \LogicException('Attribute node is null.');
         }
 
         $this->argumentsNode = $attributeNode;

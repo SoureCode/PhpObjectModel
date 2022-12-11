@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace SoureCode\PhpObjectModel\Type;
 
 use PhpParser\Node;
-use RuntimeException;
 use SoureCode\PhpObjectModel\Node\NodeManipulator;
 
 class UnionType extends ComplexType
@@ -67,7 +66,7 @@ class UnionType extends ComplexType
             ) {
                 $types[] = $typeNode;
             } else {
-                throw new RuntimeException('Union type can only contain primitive, resource or class types.');
+                throw new \RuntimeException('Union type can only contain primitive, resource or class types.');
             }
         }
 
@@ -88,8 +87,21 @@ class UnionType extends ComplexType
         $node = $this->node;
 
         foreach ($node->types as $currentTypeNode) {
-            $name = $currentTypeNode instanceof Node\Identifier ?
-                $currentTypeNode->name : NodeManipulator::resolveName($currentTypeNode);
+            if ($currentTypeNode instanceof Node\IntersectionType) {
+                foreach ($currentTypeNode->types as $currentType) {
+                    $name = $currentType instanceof Node\Identifier ? $currentType->name :
+                        NodeManipulator::resolveName($currentType);
+
+                    if ($typeName === $name) {
+                        return true;
+                    }
+                }
+
+                continue;
+            }
+
+            $name = $currentTypeNode instanceof Node\Identifier ? $currentTypeNode->name :
+                NodeManipulator::resolveName($currentTypeNode);
 
             if ($typeName === $name) {
                 return true;
@@ -111,7 +123,7 @@ class UnionType extends ComplexType
         } else {
             $node->types = array_filter(
                 $node->types,
-                static function (Node\Name|Node\Identifier $type) {
+                static function (Node\Name|Node\IntersectionType|Node\Identifier $type) {
                     return !($type instanceof Node\Identifier && 'null' === $type->name);
                 }
             );

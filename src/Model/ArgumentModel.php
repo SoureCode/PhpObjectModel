@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace SoureCode\PhpObjectModel\Model;
 
-use LogicException;
 use PhpParser\Node;
 use SoureCode\PhpObjectModel\Value\AbstractValue;
 use SoureCode\PhpObjectModel\Value\ClassConstValue;
@@ -21,7 +20,7 @@ class ArgumentModel extends AbstractModel
             $value = $value instanceof ValueInterface ? $value->getNode() : $value;
 
             if (null === $value) {
-                throw new LogicException('Value can not be null if node is a string.');
+                throw new \LogicException('Value can not be null if node is a string.');
             }
 
             $node = new Node\Arg(

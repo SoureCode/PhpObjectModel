@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace SoureCode\PhpObjectModel\Model;
 
-use InvalidArgumentException;
 use PhpParser\Node;
 use SoureCode\PhpObjectModel\File\AbstractFile;
 use SoureCode\PhpObjectModel\File\InterfaceFile;
@@ -146,7 +145,7 @@ class InterfaceModel extends AbstractClassLikeModel
         });
 
         if (null === $node) {
-            throw new InvalidArgumentException(sprintf('Method "%s" not found.', $name));
+            throw new \InvalidArgumentException(sprintf('Method "%s" not found.', $name));
         }
 
         $model = new InterfaceMethodModel($node);
@@ -162,7 +161,7 @@ class InterfaceModel extends AbstractClassLikeModel
         }
 
         if ($this->hasMethod($method->getName())) {
-            throw new InvalidArgumentException(sprintf('Method "%s" already exists.', $method->getName()));
+            throw new \InvalidArgumentException(sprintf('Method "%s" already exists.', $method->getName()));
         }
 
         $node = $method->getNode();

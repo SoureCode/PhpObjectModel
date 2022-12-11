@@ -1,9 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<files psalm-version="4.27.0@faf106e717c37b8c81721845dba9de3d8deed8ff">
-  <file src="src/Node/NodeManipulator.php">
-    <PropertyTypeCoercion occurrences="1">
-      <code>[$className-&gt;getShortName()]</code>
-    </PropertyTypeCoercion>
+<files psalm-version="5.1.0@4defa177c89397c5e14737a80fe4896584130674">
+  <file src="src/File/AbstractFile.php">
+    <PossiblyInvalidPropertyAssignmentValue occurrences="1"/>
+  </file>
+  <file src="src/Model/AbstractFunctionLikeModel.php">
+    <MixedPropertyTypeCoercion occurrences="1">
+      <code>$this-&gt;node-&gt;params</code>
+    </MixedPropertyTypeCoercion>
   </file>
   <file src="src/ValueObject/ClassName.php">
     <LessSpecificReturnStatement occurrences="1">

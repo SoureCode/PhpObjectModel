@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace SoureCode\PhpObjectModel\Traits;
 
-use LogicException;
 use PhpParser\Node;
 use SoureCode\PhpObjectModel\Model\ArgumentModel;
 
@@ -84,7 +83,7 @@ trait Arguments
             }
         }
 
-        throw new LogicException(sprintf('Argument "%s" not found.', $name));
+        throw new \LogicException(sprintf('Argument "%s" not found.', $name));
     }
 
     public function hasArgument(ArgumentModel|Node\Arg|string $modelOrName): bool
