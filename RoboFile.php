@@ -2,6 +2,11 @@
 
 declare(strict_types=1);
 
+use Robo\Collection\CollectionBuilder;
+use Robo\Symfony\ConsoleIO;
+use Robo\Task\Base\Exec;
+use Robo\Task\Composer\Install;
+use Robo\Task\Testing\PHPUnit;
 use Robo\Tasks;
 
 /**
@@ -11,101 +16,94 @@ use Robo\Tasks;
  */
 class RoboFile extends Tasks
 {
-    public function install(): void
+    public function cs(): Exec|CollectionBuilder
     {
-        $this->vendor();
-    }
-
-    public function cs(): void
-    {
-        $this->php(
-            [
+        return $this->taskPhp()
+            ->env('PHP_CS_FIXER_IGNORE_ENV', '1')
+            ->args([
                 'vendor/bin/php-cs-fixer',
                 'fix',
                 '--dry-run',
                 '--diff',
             ]
-        );
+            );
     }
 
-    public function psalm(): void
+    public function psalm(): Exec|CollectionBuilder
     {
         if (isset($_SERVER['TERMINAL_EMULATOR'])) {
-            $this->php(
-                [
+            return $this->taskPhp()
+                ->args([
                     'vendor/bin/psalm',
                     '--show-info=true',
                     '--no-cache',
                     '--output-format=phpstorm',
                 ]
-            );
-        } else {
-            $this->php(
-                [
-                    'vendor/bin/psalm',
-                    '--show-info=true',
-                    '--no-cache',
-                ]
-            );
+                );
         }
+
+        return $this->taskPhp()
+            ->args([
+                'vendor/bin/psalm',
+                '--show-info=true',
+                '--no-cache',
+            ]
+            );
     }
 
-    public function baseline(): void
+    public function baseline(): Exec|CollectionBuilder
     {
-        $this->php(
-            [
+        return $this->taskPhp()
+            ->args([
                 'vendor/bin/psalm',
                 '--set-baseline=psalm-baseline.xml',
-            ]
-        );
+            ]);
     }
 
-    public function test(): void
+    public function test(): PHPUnit|CollectionBuilder
     {
-        $this->php(
-            ['vendor/bin/phpunit']
-        );
+        return $this->taskPhpUnit();
     }
 
-    public function ci(): void
+    public function ci(ConsoleIO $io): CollectionBuilder
     {
-        $this->cs();
-        $this->psalm();
-        $this->sniff();
-        $this->test();
+        return $this->collectionBuilder($io)
+            ->addTask($this->cs())
+            ->addTask($this->psalm())
+            ->addTask($this->sniff())
+            ->addTask($this->test());
     }
 
-    public function sniff(): void
+    public function sniff(): Exec|CollectionBuilder
     {
-        $this->php([
-            'vendor/bin/phpcs',
-            '--standard=PSR12',
-            'src',
-        ]);
+        return $this->taskPhp()
+            ->args([
+                'vendor/bin/phpcs',
+                '--standard=PSR12',
+                'src',
+            ]);
     }
 
-    public function csFix(): void
+    public function csFix(): Exec|CollectionBuilder
     {
-        $this->php(
-            [
-                'vendor/bin/php-cs-fixer',
-                'fix',
-            ]
-        );
-    }
-
-    private function php(array $args): void
-    {
-        $this->taskExec('php')
+        return $this->taskPhp()
             ->env('PHP_CS_FIXER_IGNORE_ENV', '1')
-            ->args($args)
-            ->run();
+            ->args(
+                [
+                    'vendor/bin/php-cs-fixer',
+                    'fix',
+                ]
+            );
     }
 
-    public function vendor(): void
+    public function vendor(): Install|CollectionBuilder
     {
-        $this->taskComposerInstall()
-            ->optimizeAutoloader()
-            ->run();
+        return $this->taskComposerInstall()
+            ->optimizeAutoloader();
+    }
+
+    private function taskPhp(string $php = 'php'): Exec|CollectionBuilder
+    {
+        return $this->taskExec($php);
     }
 }
