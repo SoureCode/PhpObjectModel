@@ -16,7 +16,7 @@
         "phpunit/phpunit": "^9.5",
         "squizlabs/php_codesniffer": "^3.7",
         "vimeo/psalm": "^5.1",
-        "friendsofphp/php-cs-fixer": "^3.13",
+        "php-cs-fixer/shim": "^3.13",
         "consolidation/robo": "4.x-dev"
     },
     "autoload": {
