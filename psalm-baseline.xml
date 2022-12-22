@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<files psalm-version="5.1.0@4defa177c89397c5e14737a80fe4896584130674">
+<files psalm-version="5.4.0@62db5d4f6a7ae0a20f7cc5a4952d730272fc0863">
   <file src="src/File/AbstractFile.php">
     <PossiblyInvalidPropertyAssignmentValue occurrences="1"/>
   </file>
   <file src="src/Model/AbstractFunctionLikeModel.php">
-    <MixedPropertyTypeCoercion occurrences="1">
+    <PropertyTypeCoercion occurrences="1">
       <code>$this-&gt;node-&gt;params</code>
-    </MixedPropertyTypeCoercion>
+    </PropertyTypeCoercion>
   </file>
   <file src="src/ValueObject/ClassName.php">
     <LessSpecificReturnStatement occurrences="1">
