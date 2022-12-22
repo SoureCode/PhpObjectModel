@@ -16,7 +16,7 @@ use Robo\Tasks;
  */
 class RoboFile extends Tasks
 {
-    public function cs(): Exec|CollectionBuilder
+    public function csTest(): Exec|CollectionBuilder
     {
         return $this->taskPhp()
             ->env('PHP_CS_FIXER_IGNORE_ENV', '1')
@@ -29,7 +29,7 @@ class RoboFile extends Tasks
             );
     }
 
-    public function psalm(): Exec|CollectionBuilder
+    public function psalmTest(): Exec|CollectionBuilder
     {
         if (isset($_SERVER['TERMINAL_EMULATOR'])) {
             return $this->taskPhp()
@@ -51,7 +51,7 @@ class RoboFile extends Tasks
             );
     }
 
-    public function baseline(): Exec|CollectionBuilder
+    public function psalmBaseline(): Exec|CollectionBuilder
     {
         return $this->taskPhp()
             ->args([
@@ -60,21 +60,21 @@ class RoboFile extends Tasks
             ]);
     }
 
-    public function test(): PHPUnit|CollectionBuilder
+    public function phpunitTest(): PHPUnit|CollectionBuilder
     {
         return $this->taskPhpUnit();
     }
 
-    public function ci(ConsoleIO $io): CollectionBuilder
+    public function appTest(ConsoleIO $io): CollectionBuilder
     {
         return $this->collectionBuilder($io)
-            ->addTask($this->cs())
-            ->addTask($this->psalm())
-            ->addTask($this->sniff())
-            ->addTask($this->test());
+            ->addTask($this->csTest())
+            ->addTask($this->psalmTest())
+            ->addTask($this->csSniff())
+            ->addTask($this->phpunitTest());
     }
 
-    public function sniff(): Exec|CollectionBuilder
+    public function csSniff(): Exec|CollectionBuilder
     {
         return $this->taskPhp()
             ->args([
@@ -96,7 +96,7 @@ class RoboFile extends Tasks
             );
     }
 
-    public function vendor(): Install|CollectionBuilder
+    public function appVendor(): Install|CollectionBuilder
     {
         return $this->taskComposerInstall()
             ->optimizeAutoloader();
