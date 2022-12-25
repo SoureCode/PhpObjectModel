@@ -129,6 +129,10 @@ class ClassConstModel extends AbstractModel
             throw new \InvalidArgumentException('File must be set.');
         }
 
+        if ($self) {
+            $classNameNode = new Node\Name('self');
+        }
+
         return new Node\Expr\ClassConstFetch(
             $classNameNode,
             $this->getName(),
